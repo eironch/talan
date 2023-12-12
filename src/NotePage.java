@@ -21,12 +21,10 @@ public class NotePage extends JFrame {
     final static int WHITE = 0xFFFFFF;
     final static int WIDTH = 540;
     final static int HEIGHT = 960;
-    final static Font FRAGOR = new Font("Fragor - Demo Version", Font.PLAIN, 40);
-    final static Font MONTSERRAT = new Font("Montserrat", Font.PLAIN, 10);
 
     NotePage() {
 
-        this.setTitle("TALAN");
+        this.setTitle("Talan");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(540, 960);
         this.setResizable(false);
@@ -74,7 +72,7 @@ public class NotePage extends JFrame {
         button.setText("Submit");
         button.setFocusable(false);
         button.setForeground(toColor(BROWN));
-        button.setFont(MONTSERRAT);
+        button.setFont(toMontserratThin(10));
         button.setBackground(toColor(WHITE));
         button.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
         button.addActionListener(e -> buttonAction());
@@ -93,7 +91,7 @@ public class NotePage extends JFrame {
 
 //        textArea.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),200));
         textArea.setRows(10);
-        textArea.setColumns(30);
+        textArea.setColumns(35);
         this.add(textArea);
 //        this.add(button);
         addMargin(date, 0, 200, 0, 0);
@@ -117,7 +115,7 @@ public class NotePage extends JFrame {
     }
 
     public Font toMontserratThin(int size){
-        return new Font("Montserrat Thin", Font.PLAIN, size);
+        return new Font("Montserrat Light", Font.PLAIN, size);
     }
 
     public Color toColor(int hex){
