@@ -7,18 +7,25 @@ import java.time.format.DateTimeFormatter;
 public class NotePage extends JFrame {
     JPanel panel = new JPanel();
     JLabel label = new JLabel();
-    JPanel datePanel = new JPanel();
-    Container sidebarContainer = new Container();
-    Container monthContainer = new Container();
-    Container dayContainer = new Container();
     JLabel monthText = new JLabel();
     JButton arrowLeft = new JButton();
     JButton arrowRight = new JButton();
     JButton sidebar = new JButton();
     JPanel header = new JPanel();
+    JLabel progressBar = new JLabel();
+    JLabel weekdayText = new JLabel();
+    JLabel yearText = new JLabel();
     Container page = new Container();
+    Container topHeader = new Container();
+    Container bottomHeader = new Container();
+    Container weekdayContainer = new Container();
+    Container progressContainer = new Container();
+    Container yearContainer = new Container();
+    Container datePanel = new Container();
+    Container sidebarContainer = new Container();
+    Container monthContainer = new Container();
+    Container dayContainer = new Container();
     JButton day = new JButton();
-    JButton button = new JButton();
     JTextArea textArea = new JTextArea();
 
     final static int YELLOW = 0xFFD34F;
@@ -42,7 +49,7 @@ public class NotePage extends JFrame {
         ImageIcon arrowLeftIcon =
                 resizeIcon(new ImageIcon("assets/leftArrowIcon.png"), 40, 40);
         ImageIcon sidebarIcon =
-                resizeIcon(new ImageIcon("assets/sidebarIcon.png"), 40, 40);
+                resizeIcon(new ImageIcon("assets/sidebarIcon.png"), 45, 45);
         ImageIcon roundSquareIcon =
                 resizeIcon(new ImageIcon("assets/roundSquareIcon.png"), 50, 50);
 
@@ -50,30 +57,47 @@ public class NotePage extends JFrame {
         this.setLayout(new BorderLayout());
         this.getContentPane().setBackground(toColor(LIGHT_YELLOW));
 
-        header.setLayout(new FlowLayout(FlowLayout.CENTER, 0,20));
+        topHeader.setLayout(new FlowLayout(FlowLayout.CENTER));
+        topHeader.setPreferredSize(new Dimension(WIDTH, 70));
+//        topHeader.setBackground(toColor(YELLOW));
+        bottomHeader.setLayout(new FlowLayout(FlowLayout.CENTER));
+        bottomHeader.setPreferredSize(new Dimension(WIDTH, 40));
+        bottomHeader.setBackground(toColor(BLACK));
+
         header.setBackground(toColor(YELLOW));
-        header.setPreferredSize(new Dimension(100, 100));
+        header.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
+        header.setPreferredSize(new Dimension(100, 130));
+        addMargin(header,10,0,0,0);
 
         page.setBackground(toColor(LIGHT_YELLOW));
         page.setLayout(new FlowLayout(FlowLayout.CENTER, 0,20));
         page.setPreferredSize(new Dimension(100, 100));
 
-        sidebarContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 22, 5));
-        sidebarContainer.setBackground(toColor(BLACK));
+        sidebarContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 22, 0));
         sidebarContainer.setPreferredSize(toDimension((int) (WIDTH/4.2),100));
-        monthContainer.setLayout(new FlowLayout());
+        monthContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
         monthContainer.setPreferredSize(toDimension((int) (WIDTH/2.1),100));
-        dayContainer.setLayout(new FlowLayout(FlowLayout.TRAILING, 10,5));
-//        dayContainer.setBackground(toColor(BLACK));
+        dayContainer.setLayout(new FlowLayout(FlowLayout.TRAILING, 10,0));
         dayContainer.setPreferredSize(toDimension((int) (WIDTH/4.2),100));
 
-        LocalDateTime date = LocalDateTime.now();
-        DateTimeFormatter monthFormat = DateTimeFormatter.ofPattern("MMMM");
+        weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 26, 0));
+        weekdayContainer.setPreferredSize(toDimension((int) (WIDTH/4.2),100));
+        progressContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+        progressContainer.setPreferredSize(toDimension((int) (WIDTH/2.1),100));
+        yearContainer.setLayout(new FlowLayout(FlowLayout.TRAILING, 18,0));
+        yearContainer.setPreferredSize(toDimension((int) (WIDTH/4.2),100));
 
-        monthText.setText(date.format(monthFormat));
+        sidebar.setIcon(sidebarIcon);
+        sidebar.setPreferredSize(toDimension(50, 50));
+        sidebar.setBackground(toColor(YELLOW));
+        sidebar.setFocusable(false);
+        sidebar.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+
+        LocalDateTime date = LocalDateTime.now();
+
+        monthText.setText(date.format(DateTimeFormatter.ofPattern("MMMM")));
         monthText.setForeground(toColor(BROWN));
         monthText.setFont(toMontserrat(40));
-
         datePanel.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
 
         arrowLeft.setIcon(arrowLeftIcon);
@@ -82,12 +106,9 @@ public class NotePage extends JFrame {
         arrowLeft.setFocusable(false);
         arrowLeft.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd");
-
-        day.setText(date.format(dateFormat));
+        day.setText(date.format(DateTimeFormatter.ofPattern("dd")));
         day.setForeground(toColor(BROWN));
         day.setFont(toMontserrat(25));
-        day.setPreferredSize(toDimension(50,50));
         day.setHorizontalTextPosition(JLabel.CENTER);
         day.setVerticalTextPosition(JLabel.CENTER);
         day.setIcon(roundSquareIcon);
@@ -101,11 +122,17 @@ public class NotePage extends JFrame {
         arrowRight.setFocusable(false);
         arrowRight.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        sidebar.setIcon(sidebarIcon);
-        sidebar.setPreferredSize(toDimension(50, 50));
-        sidebar.setBackground(toColor(YELLOW));
-        sidebar.setFocusable(false);
-        sidebar.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        weekdayText.setText(date.format(DateTimeFormatter.ofPattern("E")));
+        weekdayText.setForeground(toColor(BROWN));
+        weekdayText.setFont(toMontserrat(30));
+        weekdayText.setHorizontalTextPosition(JLabel.CENTER);
+        weekdayText.setVerticalTextPosition(JLabel.CENTER);
+
+        yearText.setText(date.format(DateTimeFormatter.ofPattern("yyyy")));
+        yearText.setForeground(toColor(BROWN));
+        yearText.setFont(toMontserrat(30));
+        yearText.setHorizontalTextPosition(JLabel.CENTER);
+        yearText.setVerticalTextPosition(JLabel.CENTER);
 
 //        button.setBounds(200, 100, 100, 50);
 //        button.setText("Submit");
@@ -121,6 +148,7 @@ public class NotePage extends JFrame {
 //        label.setVerticalAlignment(JLabel.TOP);
 //        label.setForeground(toColor(BROWN));
 //        label.setFont(FRAGOR);
+
 
         textArea.setText("Input Text");
         textArea.setFont(toMontserratLight(15));
@@ -139,9 +167,19 @@ public class NotePage extends JFrame {
         monthContainer.add(monthText);
         dayContainer.add(datePanel);
 
-        header.add(sidebarContainer);
-        header.add(monthContainer);
-        header.add(dayContainer);
+        weekdayContainer.add(weekdayText);
+        yearContainer.add(yearText);
+
+        topHeader.add(sidebarContainer);
+        topHeader.add(monthContainer);
+        topHeader.add(dayContainer);
+
+        bottomHeader.add(weekdayContainer);
+        bottomHeader.add(progressContainer);
+        bottomHeader.add(yearContainer);
+
+        header.add(topHeader);
+        header.add(bottomHeader);
 
         page.add(textArea);
 
