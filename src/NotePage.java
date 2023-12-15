@@ -12,6 +12,7 @@ public class NotePage extends JFrame {
     final static int WHITE = 0xFFFFFF;
     final static int WIDTH = 540;
     final static int HEIGHT = 960;
+    int taskSectionSize;
 
     ComponentFactory factory = new ComponentFactory();
 
@@ -21,6 +22,7 @@ public class NotePage extends JFrame {
     JButton sidebarButton = new JButton();
     JButton dayButton = new JButton();
     JButton taskAddButton = new JButton();
+    JButton taskButton = new JButton();
 
     // label
     JLabel monthText = new JLabel();
@@ -30,8 +32,9 @@ public class NotePage extends JFrame {
     JLabel taskText = new JLabel();
     JLabel dividerLeft = new JLabel();
     JLabel dividerRight = new JLabel();
+
     // field
-    JTextArea textArea = new JTextArea();
+    JTextField taskTextArea = new JTextField();
 
     // panel
     JPanel header = new JPanel();
@@ -48,34 +51,40 @@ public class NotePage extends JFrame {
     Container sidebarContainer = new Container();
     Container monthContainer = new Container();
     Container dayContainer = new Container();
-    Container taskContainer = new Container();
+    Container taskSectionContainer = new Container();
     Container taskHeaderContainer = new Container();
     Container taskTextContainer = new Container();
     Container taskAddContainer = new Container();
+    Container dividerSectionContainer = new Container();
     Container dividerContainer = new Container();
+    Container taskContainer = new Container();
+    Container taskButtonContainer = new Container();
+    Container taskTextFieldContainer = new Container();
 
+    // asset
+    ImageIcon logo = new ImageIcon("assets/logo.png");
+    ImageIcon icon = new ImageIcon("assets/icon.png");
+    ImageIcon arrowRightIcon =
+            resizeIcon(new ImageIcon("assets/rightArrowIcon.png"), 40, 40);
+    ImageIcon arrowLeftIcon =
+            resizeIcon(new ImageIcon("assets/leftArrowIcon.png"), 40, 40);
+    ImageIcon sidebarIcon =
+            resizeIcon(new ImageIcon("assets/sidebarIcon.png"), 45, 45);
+    ImageIcon roundSquareIcon =
+            resizeIcon(new ImageIcon("assets/roundSquareIcon.png"), 50, 50);
+    ImageIcon circleIcon =
+            resizeIcon(new ImageIcon("assets/circleIcon.png"), 30, 30);
+    ImageIcon plusIcon =
+            resizeIcon(new ImageIcon("assets/plusIcon.png"), 15, 15);
+    ImageIcon addIcon =
+            resizeIcon(new ImageIcon("assets/addIcon.png"), 30, 30);
+    ImageIcon dividerLeftIcon =
+            resizeIcon(new ImageIcon("assets/dividerLeftIcon.png"), 30, 4);
+    ImageIcon dividerRightIcon =
+            resizeIcon(new ImageIcon("assets/dividerRightIcon.png"), 30, 4);
 
     NotePage() {
-        ImageIcon logo = new ImageIcon("assets/logo.png");
-        ImageIcon icon = new ImageIcon("assets/icon.png");
-        ImageIcon arrowRightIcon =
-                resizeIcon(new ImageIcon("assets/rightArrowIcon.png"), 40, 40);
-        ImageIcon arrowLeftIcon =
-                resizeIcon(new ImageIcon("assets/leftArrowIcon.png"), 40, 40);
-        ImageIcon sidebarIcon =
-                resizeIcon(new ImageIcon("assets/sidebarIcon.png"), 45, 45);
-        ImageIcon roundSquareIcon =
-                resizeIcon(new ImageIcon("assets/roundSquareIcon.png"), 50, 50);
-        ImageIcon circleIcon =
-                resizeIcon(new ImageIcon("assets/circleIcon.png"), 30, 30);
-        ImageIcon plusIcon =
-                resizeIcon(new ImageIcon("assets/plusIcon.png"), 15, 15);
-        ImageIcon addIcon =
-                resizeIcon(new ImageIcon("assets/addIcon.png"), 30, 30);
-        ImageIcon dividerLeftIcon =
-                resizeIcon(new ImageIcon("assets/dividerLeftIcon.png"), 30, 4);
-        ImageIcon dividerRightIcon =
-                resizeIcon(new ImageIcon("assets/dividerRightIcon.png"), 30, 4);
+
 
 //        button.setBounds(200, 100, 100, 50);
 //        button.setText("Submit");
@@ -91,15 +100,6 @@ public class NotePage extends JFrame {
 //        label.setVerticalAlignment(JLabel.TOP);
 //        label.setForeground(toColor(BROWN));
 //        label.setFont(FRAGOR);
-
-//        textArea.setText("Input Text");
-//        textArea.setFont(toMontserratLight(15));
-//        textArea.setBackground(toColor(LIGHT_YELLOW));
-//        textArea.setLineWrap(true);
-//        textArea.setWrapStyleWord(true);
-////        textArea.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),200));
-//        textArea.setRows(10);
-//        textArea.setColumns(35);
 
         this.setTitle("Talan");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -121,7 +121,7 @@ public class NotePage extends JFrame {
         page.setPreferredSize(new Dimension(100, 100));
         addMargin(page, 15,0,0,0);
 
-        //- top header
+        // ----------------- top header -------------------
         factory.createContainer(topHeaderContainer, new FlowLayout(), WIDTH, 65);
 
         // container
@@ -167,10 +167,9 @@ public class NotePage extends JFrame {
         arrowRightButton.setFocusable(false);
         arrowRightButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        //- bottom header
+        // ----------------- bottom header --------------------
         factory.createContainer(bottomHeaderContainer,
                 new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 40);
-        bottomHeaderContainer.setBackground(toColor(BLACK));
 
         // container
         weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 18, 0));
@@ -189,9 +188,10 @@ public class NotePage extends JFrame {
         yearText.setForeground(toColor(BROWN));
         yearText.setFont(toMontserrat(30));
 
-        //- task
-        factory.createContainer(taskContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, 300);
+        // ----------------- task section ------------------Container
+        taskSectionSize = 115;
+        factory.createContainer(taskSectionContainer,
+                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, taskSectionSize);
 
         // header
         factory.createContainer(taskHeaderContainer, new GridLayout(0,2,0,0), WIDTH, 50);
@@ -212,8 +212,10 @@ public class NotePage extends JFrame {
         taskAddButton.setFocusable(false);
         taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
+        factory.createContainer(dividerSectionContainer,
+                new FlowLayout(), WIDTH,20);
         factory.createContainer(dividerContainer,
-                new FlowLayout(FlowLayout.CENTER, 0,3), WIDTH, 7);
+                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 4);
 
         dividerLeft.setIcon(dividerLeftIcon);
         dividerLeft.setPreferredSize(new Dimension(dividerLeftIcon.getIconWidth(),8));
@@ -226,9 +228,31 @@ public class NotePage extends JFrame {
         divider.setBackground(toColor(BROWN));
         divider.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),8));
 
+        // ------------------- tasks -------------------
+        factory.createContainer(taskContainer,
+                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 40);
+        factory.createContainer(taskButtonContainer,
+                new FlowLayout(FlowLayout.LEADING,0,0), 46,40);
+        factory.createContainer(taskTextFieldContainer,
+                new GridLayout(1,1, 0,0), (int) (WIDTH - (WIDTH/3.5)), 40);
+
+        taskTextArea.setText("Get groceries");
+        taskTextArea.setFont(toMontserrat(20));
+        taskTextArea.setBackground(toColor(LIGHT_YELLOW));
+        taskTextArea.setHorizontalAlignment(JTextField.LEFT);
+        taskTextArea.setForeground(toColor(BROWN));
+        taskTextArea.setBorder(null);
+
+        taskButton.setIcon(circleIcon);
+        taskButton.setBackground(toColor(LIGHT_YELLOW));
+        taskButton.setPreferredSize(new Dimension(40,40));
+        taskButton.setFocusable(false);
+        taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+
         // debug
         sidebarButton.addActionListener(e -> addNote());
 
+        // ------------------ hierarchy ------------------
         // top header
         datePanel.add(arrowLeftButton);
         datePanel.add(dayButton);
@@ -250,38 +274,50 @@ public class NotePage extends JFrame {
         bottomHeaderContainer.add(progressContainer);
         bottomHeaderContainer.add(yearContainer);
 
-        // task
+        // task header
         taskTextContainer.add(taskText);
         taskAddContainer.add(taskAddButton);
 
         taskHeaderContainer.add(taskTextContainer);
         taskHeaderContainer.add(taskAddContainer);
 
-        taskContainer.add(taskHeaderContainer);
-
+        // divider
         dividerContainer.add(dividerLeft);
         dividerContainer.add(divider);
         dividerContainer.add(dividerRight);
 
-        taskContainer.add(dividerContainer);
+        dividerSectionContainer.add(dividerContainer);
+
+        // task
+        taskButtonContainer.add(taskButton);
+        taskTextFieldContainer.add(taskTextArea);
+
+        taskContainer.add(taskTextFieldContainer);
+        taskContainer.add(taskButtonContainer);
+
+        taskSectionContainer.add(taskHeaderContainer);
+        taskSectionContainer.add(dividerSectionContainer);
+        taskSectionContainer.add(taskContainer);
 
         // header
         header.add(topHeaderContainer);
         header.add(bottomHeaderContainer);
 
         // page
-        page.add(taskContainer);
+        page.add(taskSectionContainer);
 
         this.add(header, BorderLayout.NORTH);
         this.add(page, BorderLayout.CENTER);
+        this.setFocusable(true);
+        this.requestFocus();
     }
 
     public Font toMontserrat(int size){
         return new Font("Montserrat", Font.PLAIN, size);
     }
 
-    public Font toMontserratLight(int size){
-        return new Font("Montserrat Light", Font.PLAIN, size);
+    public Font toMontserratMedium(int size){
+        return new Font("Montserrat Medium", Font.PLAIN, size);
     }
 
     public Color toColor(int hex){
@@ -304,13 +340,48 @@ public class NotePage extends JFrame {
     }
 
     public void addNote(){
-        JLabel label = new JLabel();
-        label.setText("yes");
-        page.add(label);
+        Container taskContainer = new Container();
+        Container taskButtonContainer = new Container();
+        Container taskTextFieldContainer = new Container();
+        JButton taskButton = new JButton();
+        JTextField taskTextArea = new JTextField();
+
+        taskSectionSize += 40;
+        taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize));
+
+        factory.createContainer(taskContainer,
+                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 40);
+        factory.createContainer(taskButtonContainer,
+                new FlowLayout(FlowLayout.LEADING,0,0), 46,40);
+        factory.createContainer(taskTextFieldContainer,
+                new GridLayout(1,1, 0,0), (int) (WIDTH - (WIDTH/3.5)), 40);
+
+        taskTextArea.setText("Get groceries");
+        taskTextArea.setFont(toMontserrat(20));
+        taskTextArea.setBackground(toColor(LIGHT_YELLOW));
+        taskTextArea.setHorizontalAlignment(JTextField.LEFT);
+        taskTextArea.setForeground(toColor(BROWN));
+        taskTextArea.setBorder(null);
+
+        taskButton.setIcon(circleIcon);
+        taskButton.setBackground(toColor(LIGHT_YELLOW));
+        taskButton.setPreferredSize(new Dimension(40,40));
+        taskButton.setFocusable(false);
+        taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+
+        taskButtonContainer.add(taskButton);
+        taskTextFieldContainer.add(taskTextArea);
+
+        taskContainer.add(taskTextFieldContainer);
+        taskContainer.add(taskButtonContainer);
+
+
+
+        taskSectionContainer.add(taskContainer);
 
         SwingUtilities.invokeLater(() -> {
-            this.revalidate();
-            this.repaint();
+            taskSectionContainer.revalidate();
+            taskSectionContainer.repaint();
         });
     }
 }
