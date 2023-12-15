@@ -1,8 +1,12 @@
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 public class NotePage extends JFrame {
     final static int YELLOW = 0xFFD34F;
@@ -13,6 +17,7 @@ public class NotePage extends JFrame {
     final static int WIDTH = 540;
     final static int HEIGHT = 960;
     int taskSectionSize;
+    LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
 
     ComponentFactory factory = new ComponentFactory();
 
@@ -82,6 +87,8 @@ public class NotePage extends JFrame {
             resizeIcon(new ImageIcon("assets/dividerLeftIcon.png"), 30, 4);
     ImageIcon dividerRightIcon =
             resizeIcon(new ImageIcon("assets/dividerRightIcon.png"), 30, 4);
+    ImageIcon doneIcon =
+            resizeIcon(new ImageIcon("assets/doneIcon.png"), 30, 30);
 
     NotePage() {
 
@@ -211,6 +218,7 @@ public class NotePage extends JFrame {
         taskAddButton.setPreferredSize(new Dimension(50,50));
         taskAddButton.setFocusable(false);
         taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskAddButton.addActionListener(e -> addNote());
 
         factory.createContainer(dividerSectionContainer,
                 new FlowLayout(), WIDTH,20);
@@ -227,30 +235,6 @@ public class NotePage extends JFrame {
 
         divider.setBackground(toColor(BROWN));
         divider.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),8));
-
-        // ------------------- tasks -------------------
-        factory.createContainer(taskContainer,
-                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 40);
-        factory.createContainer(taskButtonContainer,
-                new FlowLayout(FlowLayout.LEADING,0,0), 46,40);
-        factory.createContainer(taskTextFieldContainer,
-                new GridLayout(1,1, 0,0), (int) (WIDTH - (WIDTH/3.5)), 40);
-
-        taskTextArea.setText("Get groceries");
-        taskTextArea.setFont(toMontserrat(20));
-        taskTextArea.setBackground(toColor(LIGHT_YELLOW));
-        taskTextArea.setHorizontalAlignment(JTextField.LEFT);
-        taskTextArea.setForeground(toColor(BROWN));
-        taskTextArea.setBorder(null);
-
-        taskButton.setIcon(circleIcon);
-        taskButton.setBackground(toColor(LIGHT_YELLOW));
-        taskButton.setPreferredSize(new Dimension(40,40));
-        taskButton.setFocusable(false);
-        taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
-
-        // debug
-        sidebarButton.addActionListener(e -> addNote());
 
         // ------------------ hierarchy ------------------
         // top header
@@ -298,6 +282,8 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(dividerSectionContainer);
         taskSectionContainer.add(taskContainer);
+
+        addNote();
 
         // header
         header.add(topHeaderContainer);
@@ -356,7 +342,7 @@ public class NotePage extends JFrame {
         factory.createContainer(taskTextFieldContainer,
                 new GridLayout(1,1, 0,0), (int) (WIDTH - (WIDTH/3.5)), 40);
 
-        taskTextArea.setText("Get groceries");
+        taskTextArea.setText("New Task");
         taskTextArea.setFont(toMontserrat(20));
         taskTextArea.setBackground(toColor(LIGHT_YELLOW));
         taskTextArea.setHorizontalAlignment(JTextField.LEFT);
@@ -368,6 +354,7 @@ public class NotePage extends JFrame {
         taskButton.setPreferredSize(new Dimension(40,40));
         taskButton.setFocusable(false);
         taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskButton.addActionListener(this::finishTask);
 
         taskButtonContainer.add(taskButton);
         taskTextFieldContainer.add(taskTextArea);
@@ -375,13 +362,42 @@ public class NotePage extends JFrame {
         taskContainer.add(taskTextFieldContainer);
         taskContainer.add(taskButtonContainer);
 
-
+        tasks.add(new LinkedList<>(Arrays.asList(
+                taskContainer,
+                taskButtonContainer,
+                taskTextFieldContainer,
+                taskButton,
+                taskTextArea))
+        );
 
         taskSectionContainer.add(taskContainer);
+
+        taskTextArea.requestFocus();
 
         SwingUtilities.invokeLater(() -> {
             taskSectionContainer.revalidate();
             taskSectionContainer.repaint();
         });
+    }
+
+    public void finishTask(ActionEvent e) {
+        Object component = e.getSource();
+        System.out.println(component);
+        for(int i = 0; i < tasks.size(); i++){
+            if (!tasks.get(i).contains(component)){
+                continue;
+            }
+
+            taskSectionContainer.remove((Component) tasks.get(i).get(0));
+            tasks.remove(i);
+
+            System.out.println("e");
+            SwingUtilities.invokeLater(() -> {
+                taskSectionContainer.revalidate();
+                taskSectionContainer.repaint();
+            });
+
+            return;
+        }
     }
 }
