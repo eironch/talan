@@ -28,13 +28,15 @@ public class NotePage extends JFrame {
     JLabel weekdayText = new JLabel();
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
-
+    JLabel dividerLeft = new JLabel();
+    JLabel dividerRight = new JLabel();
     // field
     JTextArea textArea = new JTextArea();
 
     // panel
     JPanel header = new JPanel();
     JPanel page = new JPanel();
+    JPanel divider = new JPanel();
 
     // container
     Container topHeaderContainer = new Container();
@@ -50,6 +52,8 @@ public class NotePage extends JFrame {
     Container taskHeaderContainer = new Container();
     Container taskTextContainer = new Container();
     Container taskAddContainer = new Container();
+    Container dividerContainer = new Container();
+
 
     NotePage() {
         ImageIcon logo = new ImageIcon("assets/logo.png");
@@ -67,7 +71,11 @@ public class NotePage extends JFrame {
         ImageIcon plusIcon =
                 resizeIcon(new ImageIcon("assets/plusIcon.png"), 15, 15);
         ImageIcon addIcon =
-                resizeIcon(new ImageIcon("assets/addIcon.png"), 35, 35);
+                resizeIcon(new ImageIcon("assets/addIcon.png"), 30, 30);
+        ImageIcon dividerLeftIcon =
+                resizeIcon(new ImageIcon("assets/dividerLeftIcon.png"), 30, 4);
+        ImageIcon dividerRightIcon =
+                resizeIcon(new ImageIcon("assets/dividerRightIcon.png"), 30, 4);
 
 //        button.setBounds(200, 100, 100, 50);
 //        button.setText("Submit");
@@ -111,7 +119,7 @@ public class NotePage extends JFrame {
         page.setBackground(toColor(LIGHT_YELLOW));
         page.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
         page.setPreferredSize(new Dimension(100, 100));
-        addMargin(page, 20,0,0,0);
+        addMargin(page, 15,0,0,0);
 
         //- top header
         factory.createContainer(topHeaderContainer, new FlowLayout(), WIDTH, 65);
@@ -120,7 +128,7 @@ public class NotePage extends JFrame {
         factory.createContainer(sidebarContainer,
                 new FlowLayout(FlowLayout.LEADING, 22, 0), (int) (WIDTH/4.5),100);
         factory.createContainer(monthContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), (int) (WIDTH/2.1),100);
+                new FlowLayout(FlowLayout.CENTER, 0, 2), (int) (WIDTH/2.1),100);
         factory.createContainer(dayContainer,
                 new FlowLayout(FlowLayout.TRAILING, 10, 0), (int) (WIDTH/4.5),100);
 
@@ -165,7 +173,7 @@ public class NotePage extends JFrame {
         bottomHeaderContainer.setBackground(toColor(BLACK));
 
         // container
-        weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 19, 0));
+        weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 18, 0));
         weekdayContainer.setPreferredSize(toDimension((int) (WIDTH/4.5),100));
         progressContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
         progressContainer.setPreferredSize(toDimension((int) (WIDTH/2.1),100));
@@ -186,13 +194,13 @@ public class NotePage extends JFrame {
                 new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, 300);
 
         // header
-        factory.createContainer(taskHeaderContainer, new GridLayout(), WIDTH, 50);
+        factory.createContainer(taskHeaderContainer, new GridLayout(0,2,0,0), WIDTH, 50);
 
         // content
         factory.createContainer(taskTextContainer,
-                new FlowLayout(FlowLayout.LEADING, 40,0), WIDTH, HEIGHT);
+                new FlowLayout(FlowLayout.LEADING, 54,3), WIDTH, HEIGHT);
         factory.createContainer(taskAddContainer,
-                new FlowLayout(FlowLayout.TRAILING, 40,0), WIDTH, HEIGHT);
+                new FlowLayout(FlowLayout.TRAILING, 56,0), WIDTH, HEIGHT);
 
         taskText.setText("Tasks");
         taskText.setForeground(toColor(BROWN));
@@ -203,6 +211,20 @@ public class NotePage extends JFrame {
         taskAddButton.setPreferredSize(new Dimension(50,50));
         taskAddButton.setFocusable(false);
         taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+
+        factory.createContainer(dividerContainer,
+                new FlowLayout(FlowLayout.CENTER, 0,3), WIDTH, 7);
+
+        dividerLeft.setIcon(dividerLeftIcon);
+        dividerLeft.setPreferredSize(new Dimension(dividerLeftIcon.getIconWidth(),8));
+        dividerLeft.setVerticalAlignment(SwingConstants.TOP);
+
+        dividerRight.setIcon(dividerRightIcon);
+        dividerRight.setPreferredSize(new Dimension(dividerRightIcon.getIconWidth(),8));
+        dividerRight.setVerticalAlignment(SwingConstants.TOP);
+
+        divider.setBackground(toColor(BROWN));
+        divider.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),8));
 
         // debug
         sidebarButton.addActionListener(e -> addNote());
@@ -236,6 +258,12 @@ public class NotePage extends JFrame {
         taskHeaderContainer.add(taskAddContainer);
 
         taskContainer.add(taskHeaderContainer);
+
+        dividerContainer.add(dividerLeft);
+        dividerContainer.add(divider);
+        dividerContainer.add(dividerRight);
+
+        taskContainer.add(dividerContainer);
 
         // header
         header.add(topHeaderContainer);
