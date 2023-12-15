@@ -29,4 +29,13 @@ public class ComponentFactory {
         container.setLayout(layout);
         container.setPreferredSize(new Dimension(width, height));
     }
+    public void createContainer(JPanel panel, BorderLayout layout, int width, int height){
+        panel.setLayout(layout);
+        panel.setPreferredSize(new Dimension(width, height));
+    }
+
+    public void createContainer(Container container, BorderLayout layout, int width, int height){
+        container.setLayout(layout);
+        container.setPreferredSize(new Dimension(width, height));
+    }
 }
