@@ -35,6 +35,8 @@ public class NotePage extends JFrame {
     JLabel weekdayText = new JLabel();
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
+    JLabel noteText = new JLabel();
+    JLabel noteContextText = new JLabel();
 
     // panel
     JPanel header = new JPanel();
@@ -54,9 +56,11 @@ public class NotePage extends JFrame {
     Container taskHeaderContainer = new Container();
     Container taskTextContainer = new Container();
     Container taskAddContainer = new Container();
-    Container dividerSectionContainer = new Container();
-    Container dividerContainer = new Container();
     Container taskContainer = new Container();
+    Container noteSectionContainer = new Container();
+    Container noteHeaderContainer = new Container();
+    Container noteTextContainer = new Container();
+    Container noteContextTextContainer = new Container();
 
     // asset
     ImageIcon logo = new ImageIcon("assets/logo.png");
@@ -185,7 +189,7 @@ public class NotePage extends JFrame {
         yearText.setForeground(toColor(BROWN));
         yearText.setFont(toMontserrat(30));
 
-        // ----------------- task section ------------------Container
+        // ----------------- task section ------------------
         taskSectionSize = 40;
         minTaskSectionSize = 280;
         factory.createContainer(taskSectionContainer,
@@ -211,7 +215,29 @@ public class NotePage extends JFrame {
         taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
         taskAddButton.addActionListener(e -> addNote());
 
+        // ----------------- note section -----------------
+        factory.createContainer(noteSectionContainer,
+                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, 300);
+        factory.createContainer(noteHeaderContainer,
+                new GridLayout(1, 2, 0, 0), WIDTH, 50);
+        factory.createContainer(noteTextContainer,
+                new FlowLayout(FlowLayout.LEADING, 54,3), WIDTH, HEIGHT);
+        factory.createContainer(noteContextTextContainer,
+                new FlowLayout(FlowLayout.LEADING, 30,0), WIDTH, HEIGHT);
+
+        noteText.setText("Notes");
+        noteText.setForeground(toColor(BROWN));
+        noteText.setFont(toMontserrat(35));
+
+        noteContextText.setText("Tell us about your day.");
+        noteContextText.setForeground(toColor(BROWN));
+        noteContextText.setFont(toMontserrat(15));
+        noteContextText.setPreferredSize(new Dimension(WIDTH/2, 50));
+
+        // -----------------------------------------------
         // ------------------ hierarchy ------------------
+        // -----------------------------------------------
+
         // top header
         datePanel.add(arrowLeftButton);
         datePanel.add(dayButton);
@@ -247,6 +273,15 @@ public class NotePage extends JFrame {
 
         addNote();
 
+        // note
+        noteTextContainer.add(noteText);
+        noteContextTextContainer.add(noteContextText);
+
+        noteHeaderContainer.add(noteTextContainer);
+        noteHeaderContainer.add(noteContextTextContainer);
+
+        noteSectionContainer.add(noteHeaderContainer);
+
         // header
         header.add(topHeaderContainer);
         header.add(bottomHeaderContainer);
@@ -254,6 +289,7 @@ public class NotePage extends JFrame {
         // page
         page.add(taskSectionContainer);
         page.add(createDivider());
+        page.add(noteSectionContainer);
 
         this.add(header, BorderLayout.NORTH);
         this.add(page, BorderLayout.CENTER);
