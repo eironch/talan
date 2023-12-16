@@ -17,8 +17,9 @@ public class NotePage extends JFrame {
     final static int WIDTH = 540;
     final static int HEIGHT = 960;
     int taskSectionSize;
+    int minTaskSectionSize;
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
-
+    LinkedList<LinkedList<Object>> accomplishements = new LinkedList<>();
     ComponentFactory factory = new ComponentFactory();
 
     // button
@@ -27,7 +28,6 @@ public class NotePage extends JFrame {
     JButton sidebarButton = new JButton();
     JButton dayButton = new JButton();
     JButton taskAddButton = new JButton();
-    JButton taskButton = new JButton();
 
     // label
     JLabel monthText = new JLabel();
@@ -35,16 +35,10 @@ public class NotePage extends JFrame {
     JLabel weekdayText = new JLabel();
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
-    JLabel dividerLeft = new JLabel();
-    JLabel dividerRight = new JLabel();
-
-    // field
-    JTextField taskTextArea = new JTextField();
 
     // panel
     JPanel header = new JPanel();
     JPanel page = new JPanel();
-    JPanel divider = new JPanel();
 
     // container
     Container topHeaderContainer = new Container();
@@ -63,8 +57,6 @@ public class NotePage extends JFrame {
     Container dividerSectionContainer = new Container();
     Container dividerContainer = new Container();
     Container taskContainer = new Container();
-    Container taskButtonContainer = new Container();
-    Container taskTextFieldContainer = new Container();
 
     // asset
     ImageIcon logo = new ImageIcon("assets/logo.png");
@@ -91,8 +83,6 @@ public class NotePage extends JFrame {
             resizeIcon(new ImageIcon("assets/doneIcon.png"), 30, 30);
 
     NotePage() {
-
-
 //        button.setBounds(200, 100, 100, 50);
 //        button.setText("Submit");
 //        button.setFocusable(false);
@@ -196,9 +186,10 @@ public class NotePage extends JFrame {
         yearText.setFont(toMontserrat(30));
 
         // ----------------- task section ------------------Container
-        taskSectionSize = 115;
+        taskSectionSize = 40;
+        minTaskSectionSize = 280;
         factory.createContainer(taskSectionContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, taskSectionSize);
+                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, minTaskSectionSize);
 
         // header
         factory.createContainer(taskHeaderContainer, new GridLayout(0,2,0,0), WIDTH, 50);
@@ -219,22 +210,6 @@ public class NotePage extends JFrame {
         taskAddButton.setFocusable(false);
         taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
         taskAddButton.addActionListener(e -> addNote());
-
-        factory.createContainer(dividerSectionContainer,
-                new FlowLayout(), WIDTH,20);
-        factory.createContainer(dividerContainer,
-                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 4);
-
-        dividerLeft.setIcon(dividerLeftIcon);
-        dividerLeft.setPreferredSize(new Dimension(dividerLeftIcon.getIconWidth(),8));
-        dividerLeft.setVerticalAlignment(SwingConstants.TOP);
-
-        dividerRight.setIcon(dividerRightIcon);
-        dividerRight.setPreferredSize(new Dimension(dividerRightIcon.getIconWidth(),8));
-        dividerRight.setVerticalAlignment(SwingConstants.TOP);
-
-        divider.setBackground(toColor(BROWN));
-        divider.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),8));
 
         // ------------------ hierarchy ------------------
         // top header
@@ -265,22 +240,9 @@ public class NotePage extends JFrame {
         taskHeaderContainer.add(taskTextContainer);
         taskHeaderContainer.add(taskAddContainer);
 
-        // divider
-        dividerContainer.add(dividerLeft);
-        dividerContainer.add(divider);
-        dividerContainer.add(dividerRight);
-
-        dividerSectionContainer.add(dividerContainer);
-
         // task
-        taskButtonContainer.add(taskButton);
-        taskTextFieldContainer.add(taskTextArea);
-
-        taskContainer.add(taskTextFieldContainer);
-        taskContainer.add(taskButtonContainer);
-
         taskSectionContainer.add(taskHeaderContainer);
-        taskSectionContainer.add(dividerSectionContainer);
+        taskSectionContainer.add(createDivider());
         taskSectionContainer.add(taskContainer);
 
         addNote();
@@ -291,6 +253,7 @@ public class NotePage extends JFrame {
 
         // page
         page.add(taskSectionContainer);
+        page.add(createDivider());
 
         this.add(header, BorderLayout.NORTH);
         this.add(page, BorderLayout.CENTER);
@@ -332,9 +295,6 @@ public class NotePage extends JFrame {
         JButton taskButton = new JButton();
         JTextField taskTextArea = new JTextField();
 
-        taskSectionSize += 40;
-        taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize));
-
         factory.createContainer(taskContainer,
                 new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 40);
         factory.createContainer(taskButtonContainer,
@@ -370,6 +330,12 @@ public class NotePage extends JFrame {
                 taskTextArea))
         );
 
+        taskSectionSize += 40;
+
+        if ((taskSectionSize) >= 240){
+            taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
+        }
+
         taskSectionContainer.add(taskContainer);
 
         taskTextArea.requestFocus();
@@ -382,16 +348,22 @@ public class NotePage extends JFrame {
 
     public void finishTask(ActionEvent e) {
         Object component = e.getSource();
-        System.out.println(component);
         for(int i = 0; i < tasks.size(); i++){
             if (!tasks.get(i).contains(component)){
                 continue;
             }
 
             taskSectionContainer.remove((Component) tasks.get(i).get(0));
+
+            accomplishements.add(tasks.get(i));
             tasks.remove(i);
 
-            System.out.println("e");
+            taskSectionSize -= 40;
+
+            if (tasks.size()>=5){
+                taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
+            }
+
             SwingUtilities.invokeLater(() -> {
                 taskSectionContainer.revalidate();
                 taskSectionContainer.repaint();
@@ -399,5 +371,37 @@ public class NotePage extends JFrame {
 
             return;
         }
+    }
+
+    public Container createDivider(){
+        Container dividerSectionContainer = new Container();
+        Container dividerContainer = new Container();
+        JPanel divider = new JPanel();
+        JLabel dividerLeft = new JLabel();
+        JLabel dividerRight = new JLabel();
+
+        factory.createContainer(dividerSectionContainer,
+                new FlowLayout(), WIDTH,20);
+        factory.createContainer(dividerContainer,
+                new FlowLayout(FlowLayout.CENTER, 0,0), WIDTH, 4);
+
+        dividerLeft.setIcon(dividerLeftIcon);
+        dividerLeft.setPreferredSize(new Dimension(dividerLeftIcon.getIconWidth(),8));
+        dividerLeft.setVerticalAlignment(SwingConstants.TOP);
+
+        dividerRight.setIcon(dividerRightIcon);
+        dividerRight.setPreferredSize(new Dimension(dividerRightIcon.getIconWidth(),8));
+        dividerRight.setVerticalAlignment(SwingConstants.TOP);
+
+        divider.setBackground(toColor(BROWN));
+        divider.setPreferredSize(new Dimension(WIDTH - (WIDTH/4),8));
+
+        dividerContainer.add(dividerLeft);
+        dividerContainer.add(divider);
+        dividerContainer.add(dividerRight);
+
+        dividerSectionContainer.add(dividerContainer);
+
+        return dividerSectionContainer;
     }
 }
