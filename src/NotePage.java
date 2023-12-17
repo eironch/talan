@@ -1,8 +1,9 @@
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -18,8 +19,9 @@ public class NotePage extends JFrame {
     final static int HEIGHT = 960;
     int taskSectionSize;
     int minTaskSectionSize;
+    int minNoteSectionSize;
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
-    LinkedList<LinkedList<Object>> accomplishements = new LinkedList<>();
+    LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
     ComponentFactory factory = new ComponentFactory();
 
     // button
@@ -38,9 +40,14 @@ public class NotePage extends JFrame {
     JLabel noteText = new JLabel();
     JLabel noteContextText = new JLabel();
 
+    // text area
+    JTextArea noteTextArea = new JTextArea();
+
     // panel
     JPanel header = new JPanel();
     JPanel page = new JPanel();
+
+    // scroll pane
 
     // container
     Container topHeaderContainer = new Container();
@@ -61,6 +68,7 @@ public class NotePage extends JFrame {
     Container noteHeaderContainer = new Container();
     Container noteTextContainer = new Container();
     Container noteContextTextContainer = new Container();
+    Container noteTextAreaContainer = new Container();
 
     // asset
     ImageIcon logo = new ImageIcon("assets/logo.png");
@@ -216,14 +224,17 @@ public class NotePage extends JFrame {
         taskAddButton.addActionListener(e -> addNote());
 
         // ----------------- note section -----------------
+        minNoteSectionSize = 216;
         factory.createContainer(noteSectionContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, 300);
+                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, minNoteSectionSize + 50);
         factory.createContainer(noteHeaderContainer,
                 new GridLayout(1, 2, 0, 0), WIDTH, 50);
         factory.createContainer(noteTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 54,3), WIDTH, HEIGHT);
         factory.createContainer(noteContextTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 30,0), WIDTH, HEIGHT);
+        factory.createContainer(noteTextAreaContainer,
+                new FlowLayout(FlowLayout.LEADING, 5,8), (int) (WIDTH - (WIDTH/5.2)), minNoteSectionSize);
 
         noteText.setText("Notes");
         noteText.setForeground(toColor(BROWN));
@@ -233,6 +244,17 @@ public class NotePage extends JFrame {
         noteContextText.setForeground(toColor(BROWN));
         noteContextText.setFont(toMontserrat(15));
         noteContextText.setPreferredSize(new Dimension(WIDTH/2, 50));
+
+        noteTextArea.setText("Tell us about your day.");
+        noteTextArea.setFont(toMontserrat(15));
+        noteTextArea.setBackground(toColor(LIGHT_YELLOW));
+        noteTextArea.setForeground(toColor(BROWN));
+        noteTextArea.setColumns(27);
+        noteTextArea.setLineWrap(true);
+        noteTextArea.setWrapStyleWord(true);
+        noteTextArea.setBorder(null);
+
+        addDocumentListener(noteTextArea);
 
         // -----------------------------------------------
         // ------------------ hierarchy ------------------
@@ -273,14 +295,17 @@ public class NotePage extends JFrame {
 
         addNote();
 
-        // note
+        // notes
         noteTextContainer.add(noteText);
         noteContextTextContainer.add(noteContextText);
 
         noteHeaderContainer.add(noteTextContainer);
         noteHeaderContainer.add(noteContextTextContainer);
 
+        noteTextAreaContainer.add(noteTextArea);
+
         noteSectionContainer.add(noteHeaderContainer);
+        noteSectionContainer.add(noteTextAreaContainer);
 
         // header
         header.add(topHeaderContainer);
@@ -290,6 +315,7 @@ public class NotePage extends JFrame {
         page.add(taskSectionContainer);
         page.add(createDivider());
         page.add(noteSectionContainer);
+        page.add(createDivider());
 
         this.add(header, BorderLayout.NORTH);
         this.add(page, BorderLayout.CENTER);
@@ -325,6 +351,17 @@ public class NotePage extends JFrame {
     }
 
     public void addNote(){
+        taskSectionSize += 40;
+
+        if ((taskSectionSize) >= 240){
+            taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            taskSectionContainer.revalidate();
+            taskSectionContainer.repaint();
+        });
+
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
@@ -366,12 +403,6 @@ public class NotePage extends JFrame {
                 taskTextArea))
         );
 
-        taskSectionSize += 40;
-
-        if ((taskSectionSize) >= 240){
-            taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
-        }
-
         taskSectionContainer.add(taskContainer);
 
         taskTextArea.requestFocus();
@@ -391,7 +422,7 @@ public class NotePage extends JFrame {
 
             taskSectionContainer.remove((Component) tasks.get(i).get(0));
 
-            accomplishements.add(tasks.get(i));
+            accomplishments.add(tasks.get(i));
             tasks.remove(i);
 
             taskSectionSize -= 40;
@@ -407,6 +438,47 @@ public class NotePage extends JFrame {
 
             return;
         }
+    }
+
+
+    public void addDocumentListener(JTextArea textArea) {
+        textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> handleNewLine());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> handleNewLine());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> handleNewLine());
+            }
+
+            private void handleNewLine() {
+                if (noteTextArea.getPreferredSize().getHeight() + 19 <= minNoteSectionSize){
+                    noteSectionContainer.setPreferredSize(
+                            new Dimension(noteTextAreaContainer.getWidth(), minNoteSectionSize + 50));
+
+                } else {
+                    noteTextAreaContainer.setPreferredSize(
+                            new Dimension(noteTextAreaContainer.getWidth(),
+                                    (int) noteTextArea.getPreferredSize().getHeight() + 19));
+
+                    noteSectionContainer.setPreferredSize(
+                            new Dimension(noteTextAreaContainer.getWidth(),
+                                    (int) noteTextArea.getPreferredSize().getHeight() + (19 + 50)));
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    noteSectionContainer.revalidate();
+                    noteSectionContainer.repaint();
+                });
+            }
+        });
     }
 
     public Container createDivider(){
