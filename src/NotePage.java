@@ -2,12 +2,16 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class NotePage extends JFrame {
     final static int YELLOW = 0xFFD34F;
@@ -19,7 +23,7 @@ public class NotePage extends JFrame {
     final static int HEIGHT = 960;
     int taskSectionSize;
     int minTaskSectionSize;
-    int minNoteSectionSize;
+    int minNoteContainerSize;
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
     LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
     ComponentFactory factory = new ComponentFactory();
@@ -45,9 +49,10 @@ public class NotePage extends JFrame {
 
     // panel
     JPanel header = new JPanel();
-    JPanel page = new JPanel();
+    JPanel content = new JPanel();
 
     // scroll pane
+    JScrollPane pageScrollPane = new JScrollPane();
 
     // container
     Container topHeaderContainer = new Container();
@@ -112,7 +117,7 @@ public class NotePage extends JFrame {
 
         this.setTitle("Talan");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(540, 960);
+        this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);
         this.setLayout(new BorderLayout());
         this.getContentPane().setBackground(toColor(LIGHT_YELLOW));
@@ -122,13 +127,13 @@ public class NotePage extends JFrame {
 
         header.setBackground(toColor(YELLOW));
         header.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
-        header.setPreferredSize(new Dimension(100, 130));
+        header.setPreferredSize(new Dimension(WIDTH, 130));
         addMargin(header,20,0,0,0);
 
-        page.setBackground(toColor(LIGHT_YELLOW));
-        page.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
-        page.setPreferredSize(new Dimension(100, 100));
-        addMargin(page, 15,0,0,0);
+        content.setBackground(toColor(LIGHT_YELLOW));
+        content.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
+        content.setPreferredSize(new Dimension(WIDTH, HEIGHT-170));
+        addMargin(content, 15,0,0,0);
 
         // ----------------- top header -------------------
         factory.createContainer(topHeaderContainer, new FlowLayout(), WIDTH, 65);
@@ -224,9 +229,9 @@ public class NotePage extends JFrame {
         taskAddButton.addActionListener(e -> addNote());
 
         // ----------------- note section -----------------
-        minNoteSectionSize = 216;
+        minNoteContainerSize = 209;
         factory.createContainer(noteSectionContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, minNoteSectionSize + 50);
+                new FlowLayout(FlowLayout.CENTER, 0, 0), WIDTH, minNoteContainerSize + 50 + 7);
         factory.createContainer(noteHeaderContainer,
                 new GridLayout(1, 2, 0, 0), WIDTH, 50);
         factory.createContainer(noteTextContainer,
@@ -234,7 +239,9 @@ public class NotePage extends JFrame {
         factory.createContainer(noteContextTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 30,0), WIDTH, HEIGHT);
         factory.createContainer(noteTextAreaContainer,
-                new FlowLayout(FlowLayout.LEADING, 5,8), (int) (WIDTH - (WIDTH/5.2)), minNoteSectionSize);
+                new FlowLayout(FlowLayout.LEADING, 5,8), (int) (WIDTH - (WIDTH/5.2)), minNoteContainerSize);
+
+        addFocusRequest(noteTextAreaContainer);
 
         noteText.setText("Notes");
         noteText.setForeground(toColor(BROWN));
@@ -246,7 +253,7 @@ public class NotePage extends JFrame {
         noteContextText.setPreferredSize(new Dimension(WIDTH/2, 50));
 
         noteTextArea.setText("Tell us about your day.");
-        noteTextArea.setFont(toMontserrat(15));
+        noteTextArea.setFont(toMontserratMedium(15));
         noteTextArea.setBackground(toColor(LIGHT_YELLOW));
         noteTextArea.setForeground(toColor(BROWN));
         noteTextArea.setColumns(27);
@@ -312,13 +319,24 @@ public class NotePage extends JFrame {
         header.add(bottomHeaderContainer);
 
         // page
-        page.add(taskSectionContainer);
-        page.add(createDivider());
-        page.add(noteSectionContainer);
-        page.add(createDivider());
+        content.add(taskSectionContainer);
+        content.add(createDivider());
+        content.add(noteSectionContainer);
+        content.add(createDivider());
+
+        pageScrollPane = new JScrollPane(content);
+        pageScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        pageScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        pageScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        pageScrollPane.getVerticalScrollBar().setBackground(toColor(LIGHT_YELLOW));
+        pageScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
+
+        pageScrollPane.getVerticalScrollBar().setBorder(null);
+        pageScrollPane.getVerticalScrollBar().setFocusable(false);
+        pageScrollPane.setBorder(null);
 
         this.add(header, BorderLayout.NORTH);
-        this.add(page, BorderLayout.CENTER);
+        this.add(pageScrollPane, BorderLayout.CENTER);
         this.setFocusable(true);
         this.requestFocus();
     }
@@ -331,7 +349,7 @@ public class NotePage extends JFrame {
         return new Font("Montserrat Medium", Font.PLAIN, size);
     }
 
-    public Color toColor(int hex){
+    public static Color toColor(int hex){
         return new Color(hex);
     }
 
@@ -355,11 +373,12 @@ public class NotePage extends JFrame {
 
         if ((taskSectionSize) >= 240){
             taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
+            content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
         }
 
         SwingUtilities.invokeLater(() -> {
-            taskSectionContainer.revalidate();
-            taskSectionContainer.repaint();
+            content.revalidate();
+            content.repaint();
         });
 
         Container taskContainer = new Container();
@@ -429,17 +448,25 @@ public class NotePage extends JFrame {
 
             if (tasks.size()>=5){
                 taskSectionContainer.setPreferredSize(new Dimension(WIDTH, taskSectionSize + 40));
+                content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
             }
 
             SwingUtilities.invokeLater(() -> {
-                taskSectionContainer.revalidate();
-                taskSectionContainer.repaint();
+                content.revalidate();
+                content.repaint();
             });
 
             return;
         }
     }
 
+    public void addFocusRequest(Container container) {
+        container.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                noteTextArea.requestFocusInWindow();
+            }
+        });
+    }
 
     public void addDocumentListener(JTextArea textArea) {
         textArea.getDocument().addDocumentListener(new DocumentListener() {
@@ -459,9 +486,9 @@ public class NotePage extends JFrame {
             }
 
             private void handleNewLine() {
-                if (noteTextArea.getPreferredSize().getHeight() + 19 <= minNoteSectionSize){
+                if (noteTextArea.getPreferredSize().getHeight() + 19 <= minNoteContainerSize){
                     noteSectionContainer.setPreferredSize(
-                            new Dimension(noteTextAreaContainer.getWidth(), minNoteSectionSize + 50));
+                            new Dimension(noteTextAreaContainer.getWidth(), minNoteContainerSize + (50 + 7)));
 
                 } else {
                     noteTextAreaContainer.setPreferredSize(
@@ -470,12 +497,14 @@ public class NotePage extends JFrame {
 
                     noteSectionContainer.setPreferredSize(
                             new Dimension(noteTextAreaContainer.getWidth(),
-                                    (int) noteTextArea.getPreferredSize().getHeight() + (19 + 50)));
+                                    (int) noteTextArea.getPreferredSize().getHeight() + (19 + 50 + 7)));
                 }
 
+                content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
+
                 SwingUtilities.invokeLater(() -> {
-                    noteSectionContainer.revalidate();
-                    noteSectionContainer.repaint();
+                    content.revalidate();
+                    content.repaint();
                 });
             }
         });
@@ -511,5 +540,55 @@ public class NotePage extends JFrame {
         dividerSectionContainer.add(dividerContainer);
 
         return dividerSectionContainer;
+    }
+
+    private static int getTotalHeight(Container container) {
+        int totalHeight = 0;
+
+        for (Component component : container.getComponents()) {
+            totalHeight += component.getPreferredSize().height;
+        }
+
+        return totalHeight;
+    }
+
+    static class CustomScrollBarUI extends BasicScrollBarUI {
+        int verticalScrollBarWidth = 4;
+        int verticalTrackBoundX = 13;
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return createArrowButton(orientation);
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return createArrowButton(orientation);
+        }
+
+        private JButton createArrowButton(int orientation) {
+            JButton button = new JButton();
+            button.setPreferredSize(new Dimension(0, 0));
+            return button;
+        }
+
+        @Override
+        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+            trackBounds.width = verticalScrollBarWidth;
+            g.setColor(toColor(LIGHT_YELLOW));
+            g.fillRect(trackBounds.x + verticalTrackBoundX, trackBounds.y, trackBounds.width, trackBounds.height);
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+
+            thumbBounds.width = verticalScrollBarWidth;
+            int arcWidth = 4;
+            int arcHeight = 4;
+            g2.setColor(toColor(BROWN));
+            g2.fillRoundRect(thumbBounds.x + verticalTrackBoundX, thumbBounds.y, thumbBounds.width, thumbBounds.height, arcWidth, arcHeight);
+
+            g2.dispose();
+        }
     }
 }
