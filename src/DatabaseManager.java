@@ -1,6 +1,6 @@
 import java.sql.*;
 
-public class Database {
+public class DatabaseManager {
     public static void main(String[] args) throws SQLException {
 
         String url = "jdbc:mysql://localhost:3306/note_taking_app"; //URL of database to be connected
@@ -11,7 +11,7 @@ public class Database {
         String query0="CREATE TABLE IF NOT EXISTS NOTES ("+  // Initial query to create table if not already present in DB
                 "date DATE PRIMARY KEY," +
                 "time TIMESTAMP NOT NULL," +
-                "note_1 text NOT NULL" +
+                "note text NOT NULL" +
                 ")";
 
         statement.executeUpdate(query0); //executeUpdate(statement) is used to run DDL (e.g. CREATE) or DML (e.g INSERT) commands
