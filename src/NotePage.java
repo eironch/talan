@@ -24,9 +24,12 @@ public class NotePage extends JFrame {
     int taskSectionSize;
     int minTaskSectionSize;
     int minNoteContainerSize;
+
+    ComponentFactory factory = new ComponentFactory();
+    DatabaseManager dbManager = new DatabaseManager();
+
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
     LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
-    ComponentFactory factory = new ComponentFactory();
 
     // button
     JButton arrowLeftButton = new JButton();
