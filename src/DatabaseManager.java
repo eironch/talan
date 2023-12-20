@@ -3,31 +3,29 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 public class DatabaseManager {
-    public static void main(String[] args) throws SQLException {
+    DatabaseManager() throws SQLException {
+        createDatabase();
 
-        String url = "jdbc:mysql://localhost:3306/note_taking_app";
+        String url = "jdbc:mysql://localhost:3306/talan";
         Connection myConn = DriverManager.getConnection(url, "root", "");
 
         Statement statement= myConn.createStatement();
 
-        String createUsersTable="CREATE TABLE IF NOT EXISTS USERS ("+
-                "id INT NOT NULL," +
+        // create users table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS ("+
+                "id INT PRIMARY KEY," +
                 "username VARCHAR(16) NOT NULL," +
                 "password TEXT NOT NULL" +
-                ")";
+                ")");
 
-        statement.executeUpdate(createUsersTable);
-
-        String createTasksTable="CREATE TABLE IF NOT EXISTS TASKS ("+
+        // create tasks table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS TASKS ("+
                 "id INT PRIMARY KEY," +
+                "user_id INT NOT NULL," +
                 "note TEXT NOT NULL," +
                 "date DATE NOT NULL," +
-                "status VARCHAR(7) NOT NULL," +
-                "user_id INT NOT NULL," +
-                "FOREIGN KEY (user_id) REFERENCES USERS (id)" +
-                ")";
-
-        statement.executeUpdate(createTasksTable);
+                "status VARCHAR(7) NOT NULL" +
+                ")");
 
 //        String query1 = "INSERT INTO STUDENT VALUES (?, ?, ?)";
 //        PreparedStatement preStat = myConn.prepareStatement(query1); //PreparedStatement is a subclass of Statement that supports data substitution and can execute a statement multiple times
@@ -52,7 +50,17 @@ public class DatabaseManager {
 //        }
     }
 
-    private static String hashPassword(String password) {
+    private void createDatabase() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/";
+
+        Connection myConn = DriverManager.getConnection(url, "root", "");
+
+        Statement statement= myConn.createStatement();
+
+        statement.executeUpdate("CREATE DATABASE IF NOT EXISTS TALAN");
+    }
+
+    private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(password.getBytes());
