@@ -19,8 +19,8 @@ public class DatabaseManager {
         statement.executeUpdate(createUsersTable);
 
         String createTasksTable="CREATE TABLE IF NOT EXISTS TASKS ("+
+                "id INT PRIMARY KEY," +
                 "note TEXT NOT NULL," +
-                "time TIMESTAMP NOT NULL," +
                 "date DATE NOT NULL," +
                 "status VARCHAR(7) NOT NULL," +
                 "user_id INT NOT NULL," +
