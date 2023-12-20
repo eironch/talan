@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class NotePage extends JFrame {
@@ -366,9 +365,7 @@ public class NotePage extends JFrame {
     }
 
     private static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
-        Image image = icon.getImage();
-        Image resizedImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        return new ImageIcon(resizedImage);
+        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
     }
 
     public void addNote(){
@@ -379,10 +376,7 @@ public class NotePage extends JFrame {
             content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
         }
 
-        SwingUtilities.invokeLater(() -> {
-            content.revalidate();
-            content.repaint();
-        });
+        repaint(content);
 
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
@@ -429,10 +423,7 @@ public class NotePage extends JFrame {
 
         taskTextArea.requestFocus();
 
-        SwingUtilities.invokeLater(() -> {
-            taskSectionContainer.revalidate();
-            taskSectionContainer.repaint();
-        });
+        repaint(taskSectionContainer);
     }
 
     public void finishTask(ActionEvent e) {
@@ -454,10 +445,7 @@ public class NotePage extends JFrame {
                 content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
             }
 
-            SwingUtilities.invokeLater(() -> {
-                content.revalidate();
-                content.repaint();
-            });
+            repaint(content);
 
             return;
         }
@@ -505,10 +493,7 @@ public class NotePage extends JFrame {
 
                 content.setPreferredSize(new Dimension(WIDTH, getTotalHeight(content) + 20));
 
-                SwingUtilities.invokeLater(() -> {
-                    content.revalidate();
-                    content.repaint();
-                });
+                repaint(content);
             }
         });
     }
@@ -583,15 +568,22 @@ public class NotePage extends JFrame {
 
         @Override
         protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-            Graphics2D g2 = (Graphics2D) g.create();
-
             thumbBounds.width = verticalScrollBarWidth;
+            Graphics2D thumbEndGraphic = (Graphics2D) g.create();
+
             int arcWidth = 4;
             int arcHeight = 4;
-            g2.setColor(toColor(BROWN));
-            g2.fillRoundRect(thumbBounds.x + verticalTrackBoundX, thumbBounds.y, thumbBounds.width, thumbBounds.height, arcWidth, arcHeight);
+            thumbEndGraphic.setColor(toColor(BROWN));
+            thumbEndGraphic.fillRoundRect(thumbBounds.x + verticalTrackBoundX, thumbBounds.y, thumbBounds.width, thumbBounds.height, arcWidth, arcHeight);
 
-            g2.dispose();
+            thumbEndGraphic.dispose();
         }
+    }
+
+    public void repaint(Component component){
+        SwingUtilities.invokeLater(() -> {
+            component.revalidate();
+            component.repaint();
+        });
     }
 }
