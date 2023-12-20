@@ -30,7 +30,7 @@ public class NotePage extends JFrame {
     JButton arrowRightButton = new JButton();
     JButton sidebarButton = new JButton();
     JButton dayButton = new JButton();
-    JButton taskAddButton = new JButton();
+    JButton taskMenuButton = new JButton();
 
     // label
     JLabel monthText = new JLabel();
@@ -40,7 +40,6 @@ public class NotePage extends JFrame {
     JLabel taskText = new JLabel();
     JLabel noteText = new JLabel();
     JLabel noteContextText = new JLabel();
-    JLabel noTasksText = new JLabel();
 
     // text area
     JTextArea noteTextArea = new JTextArea();
@@ -50,7 +49,7 @@ public class NotePage extends JFrame {
     JPanel content = new JPanel();
 
     // scroll pane
-    JScrollPane pageScrollPane = new JScrollPane();
+    JScrollPane pageScrollPane;
 
     // container
     Container topHeaderContainer = new Container();
@@ -71,7 +70,6 @@ public class NotePage extends JFrame {
     Container noteTextContainer = new Container();
     Container noteContextTextContainer = new Container();
     Container noteTextAreaContainer = new Container();
-    Container noTasksTextContainer = new Container();
 
     NotePage() {
         this.setTitle("Talan");
@@ -151,7 +149,7 @@ public class NotePage extends JFrame {
                 new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 40);
 
         // container
-        weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 18, 0));
+        weekdayContainer.setLayout(new FlowLayout(FlowLayout.LEADING, 19, 0));
         weekdayContainer.setPreferredSize(tool.toDimension((int) (Main.WIDTH/4.5),100));
         progressContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
         progressContainer.setPreferredSize(tool.toDimension((int) (Main.WIDTH/2.1),100));
@@ -180,24 +178,17 @@ public class NotePage extends JFrame {
         factory.createContainer(taskTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 54,3), Main.WIDTH, Main.HEIGHT);
         factory.createContainer(taskAddContainer,
-                new FlowLayout(FlowLayout.TRAILING, 56,0), Main.WIDTH, Main.HEIGHT);
-        factory.createContainer(noTasksTextContainer,
-                new GridLayout(), Main.WIDTH, Main.HEIGHT);
+                new FlowLayout(FlowLayout.TRAILING, 55,0), Main.WIDTH, Main.HEIGHT);
 
         taskText.setText("Tasks");
         taskText.setForeground(tool.toColor(Main.BROWN));
         taskText.setFont(tool.toMontserrat(35));
 
-        taskAddButton.setIcon(asset.addIcon);
-        taskAddButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        taskAddButton.setPreferredSize(new Dimension(50,50));
-        taskAddButton.setFocusable(false);
-        taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
-        taskAddButton.addActionListener(e -> addNote());
-
-        noTasksText.setText("No Tasks");
-        noTasksText.setForeground(tool.toColor(Main.BROWN));
-        noTasksText.setFont(tool.toMontserrat(40));
+        taskMenuButton.setIcon(asset.circleIcon);
+        taskMenuButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        taskMenuButton.setPreferredSize(new Dimension(50,50));
+        taskMenuButton.setFocusable(false);
+        taskMenuButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
         // ----------------- note section -----------------
         minNoteContainerSize = 209;
@@ -260,7 +251,7 @@ public class NotePage extends JFrame {
 
         // task header
         taskTextContainer.add(taskText);
-        taskAddContainer.add(taskAddButton);
+        taskAddContainer.add(taskMenuButton);
 
         taskHeaderContainer.add(taskTextContainer);
         taskHeaderContainer.add(taskAddContainer);
@@ -269,7 +260,7 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(factory.createDivider(0, 5));
 
-        addNote();
+        addNewTask(asset.addIcon);
 
         // notes
         noteTextContainer.add(noteText);
@@ -311,7 +302,7 @@ public class NotePage extends JFrame {
     }
 
 
-    public void addNote(){
+    public void addNewTask(ImageIcon buttonIcon){
         taskSectionSize += 40;
 
         if ((taskSectionSize) > minTaskSectionSize - 35){
@@ -330,7 +321,7 @@ public class NotePage extends JFrame {
         factory.createContainer(taskContainer,
                 new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 40);
         factory.createContainer(taskButtonContainer,
-                new FlowLayout(FlowLayout.LEADING,0,0), 46,40);
+                new FlowLayout(FlowLayout.LEADING,0,0), 44,40);
         factory.createContainer(taskTextFieldContainer,
                 new GridLayout(1,1, 0,0), (int) (Main.WIDTH - (Main.WIDTH/3.5)), 40);
 
@@ -341,12 +332,17 @@ public class NotePage extends JFrame {
         taskTextArea.setForeground(tool.toColor(Main.BROWN));
         taskTextArea.setBorder(null);
 
-        taskButton.setIcon(asset.circleIcon);
+        taskButton.setIcon(buttonIcon);
         taskButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         taskButton.setPreferredSize(new Dimension(40,40));
         taskButton.setFocusable(false);
         taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
-        taskButton.addActionListener(this::finishTask);
+
+        if (buttonIcon == asset.circleIcon){
+            taskButton.addActionListener(this::finishTask);
+        } else if (buttonIcon == asset.addIcon){
+            taskButton.addActionListener(this::addTask);
+        }
 
         taskButtonContainer.add(taskButton);
         taskTextFieldContainer.add(taskTextArea);
@@ -356,10 +352,8 @@ public class NotePage extends JFrame {
 
         tasks.add(new LinkedList<>(Arrays.asList(
                 taskContainer,
-                taskButtonContainer,
-                taskTextFieldContainer,
-                taskButton,
-                taskTextArea))
+                taskTextArea,
+                taskButton))
         );
 
         taskSectionContainer.add(taskContainer);
@@ -369,6 +363,37 @@ public class NotePage extends JFrame {
         repaint(taskSectionContainer);
     }
 
+    public void addTask(ActionEvent e){
+        Object component = e.getSource();
+
+        for(int i = 0; i < tasks.size(); i++){
+            if (!tasks.get(i).contains(component)){
+                continue;
+            }
+
+            JTextField textField = (JTextField) tasks.get(i).get(1);
+
+            if (textField.getText().equals("New Task")){
+                return;
+            } else if (textField.getText().isEmpty()){
+                textField.setText("New Task");
+
+                repaint(taskSectionContainer);
+
+                return;
+            }
+
+            JButton button = (JButton) tasks.get(i).get(2);
+            button.setIcon(asset.circleIcon);
+            button.addActionListener(this::finishTask);
+
+            addNewTask(asset.addIcon);
+
+            /*
+            Save to database
+            */
+        }
+    }
     public void finishTask(ActionEvent e) {
         Object component = e.getSource();
 
@@ -407,17 +432,17 @@ public class NotePage extends JFrame {
         textArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                SwingUtilities.invokeLater(() -> handleNewLine());
+                SwingUtilities.invokeLater(this::handleNewLine);
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                SwingUtilities.invokeLater(() -> handleNewLine());
+                SwingUtilities.invokeLater(this::handleNewLine);
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                SwingUtilities.invokeLater(() -> handleNewLine());
+                SwingUtilities.invokeLater(this::handleNewLine);
             }
 
             private void handleNewLine() {
@@ -447,15 +472,15 @@ public class NotePage extends JFrame {
         int verticalTrackBoundX = 13;
         @Override
         protected JButton createDecreaseButton(int orientation) {
-            return createArrowButton(orientation);
+            return createArrowButton();
         }
 
         @Override
         protected JButton createIncreaseButton(int orientation) {
-            return createArrowButton(orientation);
+            return createArrowButton();
         }
 
-        private JButton createArrowButton(int orientation) {
+        private JButton createArrowButton() {
             JButton button = new JButton();
             button.setPreferredSize(new Dimension(0, 0));
             return button;
