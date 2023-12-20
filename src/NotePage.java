@@ -5,6 +5,7 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -19,7 +20,7 @@ public class NotePage extends JFrame {
     static ComponentToolbox tool = new ComponentToolbox();
     AssetHandler asset = new AssetHandler();
     ComponentFactory factory = new ComponentFactory();
-    DatabaseManager dbManager = new DatabaseManager();
+    DatabaseManager dbManager;
 
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
     LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
@@ -80,6 +81,12 @@ public class NotePage extends JFrame {
         this.setLayout(new BorderLayout());
         this.getContentPane().setBackground(tool.toColor(Main.LIGHT_YELLOW));
         this.setIconImage(asset.icon.getImage());
+
+        try {
+            dbManager = new DatabaseManager();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         LocalDateTime date = LocalDateTime.now();
 
