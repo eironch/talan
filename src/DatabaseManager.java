@@ -1,31 +1,19 @@
 import java.sql.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.Base64;
 public class DatabaseManager {
-    DatabaseManager() throws SQLException {
-        createDatabase();
+    String databaseURL = "jdbc:mysql://localhost:3306/talan";
 
-        String url = "jdbc:mysql://localhost:3306/talan";
-        Connection myConn = DriverManager.getConnection(url, "root", "");
+    DatabaseManager() {
+        try {
+            createDatabase();
+            createTables();
 
-        Statement statement= myConn.createStatement();
-
-        // create users table
-        statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS ("+
-                "id INT PRIMARY KEY," +
-                "username VARCHAR(16) NOT NULL," +
-                "password TEXT NOT NULL" +
-                ")");
-
-        // create tasks table
-        statement.executeUpdate("CREATE TABLE IF NOT EXISTS TASKS ("+
-                "id INT PRIMARY KEY," +
-                "user_id INT NOT NULL," +
-                "note TEXT NOT NULL," +
-                "date DATE NOT NULL," +
-                "status VARCHAR(7) NOT NULL" +
-                ")");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
 //        String query1 = "INSERT INTO STUDENT VALUES (?, ?, ?)";
 //        PreparedStatement preStat = myConn.prepareStatement(query1); //PreparedStatement is a subclass of Statement that supports data substitution and can execute a statement multiple times
@@ -50,14 +38,81 @@ public class DatabaseManager {
 //        }
     }
 
+    public void createTables() throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+        Statement statement = connection.createStatement();
+
+        // create users table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS ("+
+                "id INT AUTO_INCREMENT PRIMARY KEY," +
+                "username VARCHAR(16) NOT NULL," +
+                "password TEXT NOT NULL" +
+                ")");
+
+        // create tasks table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS TASKS ("+
+                "id INT AUTO_INCREMENT PRIMARY KEY," +
+                "user_id INT NOT NULL," +
+                "task_text TEXT NOT NULL," +
+                "date DATE NOT NULL," +
+                "status VARCHAR(7) NOT NULL" +
+                ")");
+
+        connection.close();
+    }
+
+    public void insertToTasks(String taskText, LocalDateTime dateTime) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        String query = "INSERT INTO TASKS (user_id, task_text, date, status) VALUES (?, ?, ?, ?)";
+
+        PreparedStatement preStat = connection.prepareStatement(query);
+
+        preStat.setInt(1, 1);
+        preStat.setString(2, taskText);
+        preStat.setDate(3, Date.valueOf(dateTime.toLocalDate()));
+        preStat.setString(4, "pending");
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public void updateToTasks(String taskText, int id) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        String query = "UPDATE TASKS SET user_id = ?, task_text = ?, status = ? WHERE id = ?";
+
+        PreparedStatement preStat = connection.prepareStatement(query);
+
+        preStat.setInt(1, 1);
+        preStat.setString(2, taskText);
+        preStat.setString(3, "pending");
+        preStat.setInt(4, id);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public int getTaskIdOfLast() throws SQLException {
+        Connection connection =  DriverManager.getConnection(databaseURL, "root", "");
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT ID FROM TASKS ORDER BY ID DESC LIMIT 1");
+
+        return preStat.executeQuery().getInt("id");
+    }
+
     private void createDatabase() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/";
 
-        Connection myConn = DriverManager.getConnection(url, "root", "");
+        Connection connection = DriverManager.getConnection(url, "root", "");
 
-        Statement statement= myConn.createStatement();
+        Statement statement= connection.createStatement();
 
         statement.executeUpdate("CREATE DATABASE IF NOT EXISTS TALAN");
+
+        connection.close();
     }
 
     private String hashPassword(String password) {
