@@ -203,8 +203,6 @@ public class NotePage extends JFrame {
         factory.createContainer(noteTextAreaContainer,
                 new FlowLayout(FlowLayout.LEADING, 5,8), (int) (Main.WIDTH - (Main.WIDTH/5.2)), minNoteContainerSize);
 
-        addFocusRequest(noteTextAreaContainer);
-
         noteText.setText("Notes");
         noteText.setForeground(tool.toColor(Main.BROWN));
         noteText.setFont(tool.toMontserrat(35));
@@ -217,12 +215,15 @@ public class NotePage extends JFrame {
         noteTextArea.setText("Tell us about your day.");
         noteTextArea.setFont(tool.toMontserratMedium(15));
         noteTextArea.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        noteTextArea.setForeground(tool.toColor(Main.BROWN));
+        noteTextArea.setForeground(tool.toColor(Main.LIGHT_BROWN));
         noteTextArea.setColumns(27);
         noteTextArea.setLineWrap(true);
         noteTextArea.setWrapStyleWord(true);
         noteTextArea.setBorder(null);
+        addCaretStart(noteTextArea);
+        addFocusRequest(noteTextAreaContainer, noteTextArea);
         addDocumentListener(noteTextArea);
+
 
         // -----------------------------------------------
         // ------------------ hierarchy ------------------
@@ -303,6 +304,12 @@ public class NotePage extends JFrame {
 
 
     public void addNewTask(ImageIcon buttonIcon){
+        Container taskContainer = new Container();
+        Container taskButtonContainer = new Container();
+        Container taskTextFieldContainer = new Container();
+        JButton taskButton = new JButton();
+        JTextField taskTextField = new JTextField();
+
         taskSectionSize += 40;
 
         if ((taskSectionSize) > minTaskSectionSize - 35){
@@ -312,12 +319,6 @@ public class NotePage extends JFrame {
 
         repaint(content);
 
-        Container taskContainer = new Container();
-        Container taskButtonContainer = new Container();
-        Container taskTextFieldContainer = new Container();
-        JButton taskButton = new JButton();
-        JTextField taskTextArea = new JTextField();
-
         factory.createContainer(taskContainer,
                 new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 40);
         factory.createContainer(taskButtonContainer,
@@ -325,12 +326,14 @@ public class NotePage extends JFrame {
         factory.createContainer(taskTextFieldContainer,
                 new GridLayout(1,1, 0,0), (int) (Main.WIDTH - (Main.WIDTH/3.5)), 40);
 
-        taskTextArea.setText("New Task");
-        taskTextArea.setFont(tool.toMontserrat(20));
-        taskTextArea.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        taskTextArea.setHorizontalAlignment(JTextField.LEFT);
-        taskTextArea.setForeground(tool.toColor(Main.BROWN));
-        taskTextArea.setBorder(null);
+        taskTextField.setText("New Task");
+        taskTextField.setFont(tool.toMontserrat(20));
+        taskTextField.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        taskTextField.setHorizontalAlignment(JTextField.LEFT);
+        taskTextField.setForeground(tool.toColor(Main.LIGHT_BROWN));
+        taskTextField.setBorder(null);
+        addCaretStart(taskTextField);
+        addDocumentListener(taskTextField);
 
         taskButton.setIcon(buttonIcon);
         taskButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
@@ -345,20 +348,20 @@ public class NotePage extends JFrame {
         }
 
         taskButtonContainer.add(taskButton);
-        taskTextFieldContainer.add(taskTextArea);
+        taskTextFieldContainer.add(taskTextField);
 
         taskContainer.add(taskTextFieldContainer);
         taskContainer.add(taskButtonContainer);
 
         tasks.add(new LinkedList<>(Arrays.asList(
                 taskContainer,
-                taskTextArea,
+                taskTextField,
                 taskButton))
         );
 
         taskSectionContainer.add(taskContainer);
 
-        taskTextArea.requestFocus();
+        taskTextField.requestFocus();
 
         repaint(taskSectionContainer);
     }
@@ -377,6 +380,8 @@ public class NotePage extends JFrame {
                 return;
             } else if (textField.getText().isEmpty()){
                 textField.setText("New Task");
+                textField.setForeground(tool.toColor(Main.LIGHT_BROWN));
+                textField.setCaretPosition(0);
 
                 repaint(taskSectionContainer);
 
@@ -420,15 +425,57 @@ public class NotePage extends JFrame {
         }
     }
 
-    public void addFocusRequest(Container container) {
+    public void addFocusRequest(Container container, JTextArea textArea) {
         container.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (textArea.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                    textArea.setCaretPosition(0);
+                }
+            }
+
             public void mouseClicked(MouseEvent e) {
                 noteTextArea.requestFocusInWindow();
             }
         });
     }
 
+    public void addCaretStart(JTextField textField) {
+        textField.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                resetCaretPosition();
+            }
+            public void mouseReleased(MouseEvent e) {
+                resetCaretPosition();
+            }
+
+            private void resetCaretPosition(){
+                if (textField.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                    textField.setCaretPosition(0);
+                }
+            }
+        });
+    }
+
+    public void addCaretStart(JTextArea textArea) {
+        textArea.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                resetCaretPosition();
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                resetCaretPosition();
+            }
+
+            private void resetCaretPosition(){
+                if (textArea.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                    textArea.setCaretPosition(0);
+                }
+            }
+        });
+    }
+
     public void addDocumentListener(JTextArea textArea) {
+        final boolean[] isNewText = {true};
         textArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -446,23 +493,63 @@ public class NotePage extends JFrame {
             }
 
             private void handleNewLine() {
-                if (noteTextArea.getPreferredSize().getHeight() + 19 <= minNoteContainerSize){
+                if (isNewText[0]){
+                    textArea.setText(textArea.getText().replaceFirst(
+                            "Tell us about your day.", ""));
+                    textArea.setForeground(tool.toColor(Main.BROWN));
+
+                    isNewText[0] = false;
+                }
+
+                if (textArea.getPreferredSize().getHeight() + 19 <= minNoteContainerSize){
                     noteSectionContainer.setPreferredSize(
                             new Dimension(noteTextAreaContainer.getWidth(), minNoteContainerSize + (50 + 7)));
 
                 } else {
                     noteTextAreaContainer.setPreferredSize(
                             new Dimension(noteTextAreaContainer.getWidth(),
-                                    (int) noteTextArea.getPreferredSize().getHeight() + 19));
+                                    (int) textArea.getPreferredSize().getHeight() + 19));
 
                     noteSectionContainer.setPreferredSize(
                             new Dimension(noteTextAreaContainer.getWidth(),
-                                    (int) noteTextArea.getPreferredSize().getHeight() + (19 + 50 + 7)));
+                                    (int) textArea.getPreferredSize().getHeight() + (19 + 50 + 7)));
                 }
 
                 content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 20));
 
                 repaint(content);
+            }
+        });
+    }
+
+    public void addDocumentListener(JTextField textField) {
+        final boolean[] isNewText = {true};
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(this::handleNewLine);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(this::handleNewLine);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(this::handleNewLine);
+            }
+
+            private void handleNewLine() {
+                if (isNewText[0]){
+                    textField.setText(textField.getText().replaceFirst(
+                            "New Task", ""));
+                    textField.setForeground(tool.toColor(Main.BROWN));
+
+                    isNewText[0] = false;
+                }
+
+                repaint(textField);
             }
         });
     }
