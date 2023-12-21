@@ -13,9 +13,12 @@ import java.util.LinkedList;
 import java.awt.event.MouseEvent;
 
 public class NotePage extends JFrame {
+    final String COLOR_LIGHT_BROWN = tool.toColor(Main.LIGHT_BROWN).toString();
+
     int taskSectionSize;
     int minTaskSectionSize;
     int minNoteContainerSize;
+    boolean newTaskExists = false;
 
     static ComponentToolbox tool = new ComponentToolbox();
     AssetHandler asset = new AssetHandler();
@@ -80,11 +83,7 @@ public class NotePage extends JFrame {
         this.getContentPane().setBackground(tool.toColor(Main.LIGHT_YELLOW));
         this.setIconImage(asset.icon.getImage());
 
-        try {
-            dbManager = new DatabaseManager();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        dbManager = new DatabaseManager();
 
         LocalDateTime date = LocalDateTime.now();
 
@@ -261,7 +260,7 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(factory.createDivider(0, 5));
 
-        addNewTask(asset.addIcon);
+        addNewTask("add");
 
         // notes
         noteTextContainer.add(noteText);
@@ -303,12 +302,14 @@ public class NotePage extends JFrame {
     }
 
 
-    public void addNewTask(ImageIcon buttonIcon){
+    public void addNewTask(String buttonType){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
-        JButton taskButton = new JButton();
+        JButton taskAddButton = new JButton();
+        JButton taskFinishButton = new JButton();
         JTextField taskTextField = new JTextField();
+        int taskId = 0;
 
         taskSectionSize += 40;
 
@@ -333,40 +334,51 @@ public class NotePage extends JFrame {
         taskTextField.setForeground(tool.toColor(Main.LIGHT_BROWN));
         taskTextField.setBorder(null);
         addCaretStart(taskTextField);
-        addDocumentListener(taskTextField);
 
-        taskButton.setIcon(buttonIcon);
-        taskButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        taskButton.setPreferredSize(new Dimension(40,40));
-        taskButton.setFocusable(false);
-        taskButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskAddButton.setIcon(asset.addIcon);
+        taskAddButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        taskAddButton.setPreferredSize(new Dimension(40,40));
+        taskAddButton.setFocusable(false);
+        taskAddButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskAddButton.addActionListener(this::saveTask);
 
-        if (buttonIcon == asset.circleIcon){
-            taskButton.addActionListener(this::finishTask);
-        } else if (buttonIcon == asset.addIcon){
-            taskButton.addActionListener(this::addTask);
+        taskFinishButton.setIcon(asset.circleIcon);
+        taskFinishButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        taskFinishButton.setPreferredSize(new Dimension(40,40));
+        taskFinishButton.setFocusable(false);
+        taskFinishButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskFinishButton.addActionListener(this::finishTask);
+
+        if (buttonType.equals("add")){
+            taskButtonContainer.add(taskAddButton);
+        } else if (buttonType.equals("finish")){
+            taskButtonContainer.add(taskFinishButton);
         }
 
-        taskButtonContainer.add(taskButton);
         taskTextFieldContainer.add(taskTextField);
 
         taskContainer.add(taskTextFieldContainer);
         taskContainer.add(taskButtonContainer);
 
+        taskSectionContainer.add(taskContainer);
+
         tasks.add(new LinkedList<>(Arrays.asList(
                 taskContainer,
+                taskButtonContainer,
                 taskTextField,
-                taskButton))
+                taskAddButton,
+                taskFinishButton,
+                taskId))
         );
 
-        taskSectionContainer.add(taskContainer);
+        addDocumentListener(taskTextField, tasks);
 
         taskTextField.requestFocus();
 
         repaint(taskSectionContainer);
     }
 
-    public void addTask(ActionEvent e){
+    public void saveTask(ActionEvent e){
         Object component = e.getSource();
 
         for(int i = 0; i < tasks.size(); i++){
@@ -374,8 +386,8 @@ public class NotePage extends JFrame {
                 continue;
             }
 
-            JTextField textField = (JTextField) tasks.get(i).get(1);
-
+            // check if task is valid
+            JTextField textField = (JTextField) tasks.get(i).get(2);
             if (textField.getText().equals("New Task")){
                 return;
             } else if (textField.getText().isEmpty()){
@@ -388,17 +400,32 @@ public class NotePage extends JFrame {
                 return;
             }
 
-            JButton button = (JButton) tasks.get(i).get(2);
-            button.setIcon(asset.circleIcon);
-            button.addActionListener(this::finishTask);
+            Container container = (Container) tasks.get(i).get(1);
+            container.remove((Component) tasks.get(i).get(3));
+            container.add((Component) tasks.get(i).get(4));
 
-            addNewTask(asset.addIcon);
+            repaint(container);
 
-            /*
-            Save to database
-            */
+            handleAddTask();
+
+            // save to database
+            try {
+                dbManager.insertToTasks(textField.getText(), LocalDateTime.now());
+                System.out.println(dbManager.getTaskIdOfLast());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
     }
+
+    public void handleAddTask(){
+        JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
+
+        if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+            addNewTask("add");
+        }
+    }
+
     public void finishTask(ActionEvent e) {
         Object component = e.getSource();
 
@@ -428,7 +455,7 @@ public class NotePage extends JFrame {
     public void addFocusRequest(Container container, JTextArea textArea) {
         container.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (textArea.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
                     textArea.setCaretPosition(0);
                 }
             }
@@ -444,12 +471,15 @@ public class NotePage extends JFrame {
             public void mousePressed(MouseEvent e) {
                 resetCaretPosition();
             }
+            public void mouseClicked(MouseEvent e) {
+                resetCaretPosition();
+            }
             public void mouseReleased(MouseEvent e) {
                 resetCaretPosition();
             }
 
             private void resetCaretPosition(){
-                if (textField.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                if (textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
                     textField.setCaretPosition(0);
                 }
             }
@@ -467,7 +497,7 @@ public class NotePage extends JFrame {
             }
 
             private void resetCaretPosition(){
-                if (textArea.getForeground().toString().equals(tool.toColor(Main.LIGHT_BROWN).toString())){
+                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
                     textArea.setCaretPosition(0);
                 }
             }
@@ -475,7 +505,6 @@ public class NotePage extends JFrame {
     }
 
     public void addDocumentListener(JTextArea textArea) {
-        final boolean[] isNewText = {true};
         textArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -493,12 +522,10 @@ public class NotePage extends JFrame {
             }
 
             private void handleNewLine() {
-                if (isNewText[0]){
+                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
                     textArea.setText(textArea.getText().replaceFirst(
                             "Tell us about your day.", ""));
                     textArea.setForeground(tool.toColor(Main.BROWN));
-
-                    isNewText[0] = false;
                 }
 
                 if (textArea.getPreferredSize().getHeight() + 19 <= minNoteContainerSize){
@@ -522,8 +549,7 @@ public class NotePage extends JFrame {
         });
     }
 
-    public void addDocumentListener(JTextField textField) {
-        final boolean[] isNewText = {true};
+    public void addDocumentListener(JTextField textField, LinkedList<LinkedList<Object>> tasks) {
         textField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -541,12 +567,31 @@ public class NotePage extends JFrame {
             }
 
             private void handleNewLine() {
-                if (isNewText[0]){
+                if (textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
                     textField.setText(textField.getText().replaceFirst(
                             "New Task", ""));
                     textField.setForeground(tool.toColor(Main.BROWN));
 
-                    isNewText[0] = false;
+                    repaint(textField);
+
+                    return;
+                }
+
+                for(int i = 0; i < tasks.size(); i++) {
+                    if (!tasks.get(i).contains(textField)) {
+                        continue;
+                    }
+
+                    Container container = (Container) tasks.get(i).get(1);
+
+                    if (container.isAncestorOf((Component) tasks.get(i).get(3))){
+                        return;
+                    }
+
+                    container.remove((Component) tasks.get(i).get(4));
+                    container.add((Component) tasks.get(i).get(3));
+
+                    repaint(container);
                 }
 
                 repaint(textField);
