@@ -98,9 +98,20 @@ public class DatabaseManager {
     public int getTaskIdOfLast() throws SQLException {
         Connection connection =  DriverManager.getConnection(databaseURL, "root", "");
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT ID FROM TASKS ORDER BY ID DESC LIMIT 1");
+                "SELECT ID FROM TASKS ORDER BY ID DESC LIMIT 2");
+        ResultSet resultSet = preStat.executeQuery();
 
-        return preStat.executeQuery().getInt("id");
+        if (resultSet.next()){
+            int taskId = resultSet.getInt("id");
+
+            connection.close();
+
+            return taskId;
+        }
+
+        connection.close();
+
+        return 0;
     }
 
     private void createDatabase() throws SQLException {
