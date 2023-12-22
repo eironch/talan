@@ -410,8 +410,12 @@ public class NotePage extends JFrame {
 
             // save to database
             try {
-                dbManager.insertToTasks(textField.getText(), LocalDateTime.now());
-                System.out.println(dbManager.getTaskIdOfLast());
+                if ((Integer) tasks.get(i).get(5) == 0){
+                    dbManager.insertToTasks(textField.getText(), LocalDateTime.now());
+                    tasks.get(i).set(5, dbManager.getTaskIdOfLast());
+                } else {
+                    dbManager.updateToTasks(textField.getText(), (Integer) tasks.get(i).get(5));
+                }
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
