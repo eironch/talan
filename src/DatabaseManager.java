@@ -58,6 +58,13 @@ public class DatabaseManager {
                 "status VARCHAR(7) NOT NULL" +
                 ")");
 
+        // create notes table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS NOTES ("+
+                "date DATE PRIMARY KEY," +
+                "user_id INT NOT NULL," +
+                "note_text TEXT NOT NULL" +
+                ")");
+
         connection.close();
     }
 
