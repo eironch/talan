@@ -18,7 +18,6 @@ public class NotePage extends JFrame {
     int taskSectionSize;
     int minTaskSectionSize;
     int minNoteContainerSize;
-    boolean newTaskExists = false;
 
     static ComponentToolbox tool = new ComponentToolbox();
     AssetHandler asset = new AssetHandler();
@@ -37,7 +36,7 @@ public class NotePage extends JFrame {
 
     // label
     JLabel monthText = new JLabel();
-    JLabel progressBar = new JLabel();
+//    JLabel progressBar = new JLabel();
     JLabel weekdayText = new JLabel();
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
