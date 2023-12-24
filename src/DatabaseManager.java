@@ -139,8 +139,10 @@ public class DatabaseManager {
             byte[] hash = digest.digest(password.getBytes());
 
             return Base64.getEncoder().encodeToString(hash);
+
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+
             return null;
         }
     }
