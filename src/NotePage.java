@@ -302,7 +302,7 @@ public class NotePage extends JFrame {
         pageScrollPane.getVerticalScrollBar().setFocusable(false);
         pageScrollPane.setBorder(null);
 
-        saveNotesPeriodically(noteTextArea);
+        savePeriodically(noteTextArea);
 
         this.add(header, BorderLayout.NORTH);
         this.add(pageScrollPane, BorderLayout.CENTER);
@@ -431,16 +431,20 @@ public class NotePage extends JFrame {
         }
     }
 
-    public void saveNotesPeriodically(JTextArea textArea){
+    public void savePeriodically(JTextArea textArea){
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-        int initialDelay = 0;
+        int initialDelay = 5;
         int period = 5;
 
         scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
     }
 
     public static void saveNotes(String noteText){
+        if (noteText.equals("Tell us about your day.")){
+            return;
+        }
+
         try {
             dbManager.insertToNotes(Date.valueOf(LocalDateTime.now().toLocalDate()), noteText);
         } catch (SQLException e) {
