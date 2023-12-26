@@ -14,28 +14,6 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-//        String query1 = "INSERT INTO STUDENT VALUES (?, ?, ?)";
-//        PreparedStatement preStat = myConn.prepareStatement(query1); //PreparedStatement is a subclass of Statement that supports data substitution and can execute a statement multiple times
-//        preStat.setString(1, "Aritra"); //Using the setter methods to substitute values corresponding to the ?s
-//        preStat.setInt(2, 20184196);
-//        preStat.setString(3, "CSE");
-//
-//        preStat.executeUpdate(); //Executing the statement using executeUpdate()
-
-
-//        String query2 = "SELECT * FROM NOTES;";
-
-//        ResultSet result = statement.executeQuery(query2); //executeQuery(statement) is used to run DQL command (i.e. SELECT) and returns a ResultSet object
-
-//        while(result.next()) { //Now iterating over the ResultSet object to print the results of the query. next() returns false after all rows exhausted, else returns true
-//            int regno = result.getInt("regno"); //Getters extract corresponding data from column names
-//            String name = result.getString("name");
-//            String branch = result.getString("branch");
-//            System.out.println("Name - " + name);
-//            System.out.println("Branch - " + branch);
-//            System.out.println("Registration number - " + regno);
-//        }
     }
 
     public void createTables() throws SQLException {
