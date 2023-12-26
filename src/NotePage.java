@@ -5,12 +5,16 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.awt.event.MouseEvent;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NotePage extends JFrame {
     final String COLOR_LIGHT_BROWN = tool.toColor(Main.LIGHT_BROWN).toString();
@@ -22,7 +26,7 @@ public class NotePage extends JFrame {
     static ComponentToolbox tool = new ComponentToolbox();
     AssetHandler asset = new AssetHandler();
     ComponentFactory factory = new ComponentFactory();
-    DatabaseManager dbManager;
+    static DatabaseManager dbManager;
 
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
     LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
@@ -33,6 +37,7 @@ public class NotePage extends JFrame {
     JButton sidebarButton = new JButton();
     JButton dayButton = new JButton();
     JButton taskMenuButton = new JButton();
+    JButton noteSaveButton = new JButton();
 
     // label
     JLabel monthText = new JLabel();
@@ -41,7 +46,6 @@ public class NotePage extends JFrame {
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
     JLabel noteText = new JLabel();
-    JLabel noteContextText = new JLabel();
 
     // text area
     JTextArea noteTextArea = new JTextArea();
@@ -66,11 +70,11 @@ public class NotePage extends JFrame {
     Container taskSectionContainer = new Container();
     Container taskHeaderContainer = new Container();
     Container taskTextContainer = new Container();
-    Container taskAddContainer = new Container();
+    Container taskMenuContainer = new Container();
     Container noteSectionContainer = new Container();
     Container noteHeaderContainer = new Container();
     Container noteTextContainer = new Container();
-    Container noteContextTextContainer = new Container();
+    Container noteSaveButtonContainer = new Container();
     Container noteTextAreaContainer = new Container();
 
     NotePage() {
@@ -175,7 +179,7 @@ public class NotePage extends JFrame {
         // content
         factory.createContainer(taskTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 54,3), Main.WIDTH, Main.HEIGHT);
-        factory.createContainer(taskAddContainer,
+        factory.createContainer(taskMenuContainer,
                 new FlowLayout(FlowLayout.TRAILING, 55,0), Main.WIDTH, Main.HEIGHT);
 
         taskText.setText("Tasks");
@@ -192,12 +196,14 @@ public class NotePage extends JFrame {
         minNoteContainerSize = 209;
         factory.createContainer(noteSectionContainer,
                 new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, minNoteContainerSize + 50 + 7);
+
         factory.createContainer(noteHeaderContainer,
-                new GridLayout(1, 2, 0, 0), Main.WIDTH, 50);
+                new GridLayout(0,2,0,0), Main.WIDTH, 50);
         factory.createContainer(noteTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 54,3), Main.WIDTH, Main.HEIGHT);
-        factory.createContainer(noteContextTextContainer,
-                new FlowLayout(FlowLayout.LEADING, 30,0), Main.WIDTH, Main.HEIGHT);
+        factory.createContainer(noteSaveButtonContainer,
+                new FlowLayout(FlowLayout.TRAILING, 55,0), Main.WIDTH, Main.HEIGHT);
+
         factory.createContainer(noteTextAreaContainer,
                 new FlowLayout(FlowLayout.LEADING, 5,8), (int) (Main.WIDTH - (Main.WIDTH/5.2)), minNoteContainerSize);
 
@@ -205,10 +211,12 @@ public class NotePage extends JFrame {
         noteText.setForeground(tool.toColor(Main.BROWN));
         noteText.setFont(tool.toMontserrat(35));
 
-        noteContextText.setText("Tell us about your day.");
-        noteContextText.setForeground(tool.toColor(Main.BROWN));
-        noteContextText.setFont(tool.toMontserrat(15));
-        noteContextText.setPreferredSize(new Dimension(Main.WIDTH/2, 50));
+        noteSaveButton.setIcon(asset.circleIcon);
+        noteSaveButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        noteSaveButton.setPreferredSize(new Dimension(50,50));
+        noteSaveButton.setFocusable(false);
+        noteSaveButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        noteSaveButton.addActionListener(e -> saveNotes(noteTextArea.getText()));
 
         noteTextArea.setText("Tell us about your day.");
         noteTextArea.setFont(tool.toMontserratMedium(15));
@@ -250,10 +258,10 @@ public class NotePage extends JFrame {
 
         // task header
         taskTextContainer.add(taskText);
-        taskAddContainer.add(taskMenuButton);
+        taskMenuContainer.add(taskMenuButton);
 
         taskHeaderContainer.add(taskTextContainer);
-        taskHeaderContainer.add(taskAddContainer);
+        taskHeaderContainer.add(taskMenuContainer);
 
         // task
         taskSectionContainer.add(taskHeaderContainer);
@@ -263,10 +271,10 @@ public class NotePage extends JFrame {
 
         // notes
         noteTextContainer.add(noteText);
-        noteContextTextContainer.add(noteContextText);
+        noteSaveButtonContainer.add(noteSaveButton);
 
         noteHeaderContainer.add(noteTextContainer);
-        noteHeaderContainer.add(noteContextTextContainer);
+        noteHeaderContainer.add(noteSaveButtonContainer);
 
         noteTextAreaContainer.add(noteTextArea);
 
@@ -293,6 +301,8 @@ public class NotePage extends JFrame {
         pageScrollPane.getVerticalScrollBar().setBorder(null);
         pageScrollPane.getVerticalScrollBar().setFocusable(false);
         pageScrollPane.setBorder(null);
+
+        saveNotesPeriodically(noteTextArea);
 
         this.add(header, BorderLayout.NORTH);
         this.add(pageScrollPane, BorderLayout.CENTER);
@@ -418,6 +428,23 @@ public class NotePage extends JFrame {
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
+        }
+    }
+
+    public void saveNotesPeriodically(JTextArea textArea){
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        int initialDelay = 0;
+        int period = 5;
+
+        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
+    }
+
+    public static void saveNotes(String noteText){
+        try {
+            dbManager.insertToNotes(Date.valueOf(LocalDateTime.now().toLocalDate()), noteText);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
