@@ -71,9 +71,8 @@ public class DatabaseManager {
     public void insertToTasks(String taskText, LocalDateTime dateTime) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
-        String query = "INSERT INTO TASKS (user_id, task_text, date, status) VALUES (?, ?, ?, ?)";
-
-        PreparedStatement preStat = connection.prepareStatement(query);
+        PreparedStatement preStat = connection.prepareStatement(
+                "INSERT INTO TASKS (user_id, task_text, date, status) VALUES (?, ?, ?, ?)");
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
@@ -88,14 +87,58 @@ public class DatabaseManager {
     public void updateToTasks(String taskText, int id) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
-        String query = "UPDATE TASKS SET user_id = ?, task_text = ?, status = ? WHERE id = ?";
-
-        PreparedStatement preStat = connection.prepareStatement(query);
+        PreparedStatement preStat = connection.prepareStatement(
+                "UPDATE TASKS SET user_id = ?, task_text = ?, status = ? WHERE id = ?");
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
         preStat.setString(3, "pending");
         preStat.setInt(4, id);
+
+        preStat.executeUpdate();
+
+        connection.close();
+
+    }
+
+    public void insertToNotes(Date date, String noteText) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT 1 FROM NOTES WHERE USER_ID = ? AND DATE = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        if (resultSet.next()){
+            updateToNotes(date, noteText);
+
+            return;
+        }
+
+        preStat = connection.prepareStatement(
+                "INSERT INTO NOTES (date, user_id, note_text) VALUES (?, ?, ?)");
+
+        preStat.setDate(1, date);
+        preStat.setInt(2, 1);
+        preStat.setString(3, noteText);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public void updateToNotes(Date date, String noteText) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "UPDATE NOTES SET note_text = ? WHERE USER_ID = ? AND date = ?");
+
+        preStat.setString(1, noteText);
+        preStat.setInt(2, 1);
+        preStat.setDate(3, date);
 
         preStat.executeUpdate();
 
