@@ -93,6 +93,8 @@ public class DatabaseManager {
         if (resultSet.next()){
             updateToNotes(date, noteText);
 
+            connection.close();
+
             return;
         }
 
