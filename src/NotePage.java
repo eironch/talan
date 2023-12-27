@@ -211,7 +211,7 @@ public class NotePage extends JFrame {
         noteText.setForeground(tool.toColor(Main.BROWN));
         noteText.setFont(tool.toMontserrat(35));
 
-        noteSaveButton.setIcon(asset.circleIcon);
+        noteSaveButton.setIcon(asset.savedIcon);
         noteSaveButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         noteSaveButton.setPreferredSize(new Dimension(50,50));
         noteSaveButton.setFocusable(false);
@@ -228,7 +228,7 @@ public class NotePage extends JFrame {
         noteTextArea.setBorder(null);
         addCaretStart(noteTextArea);
         addFocusRequest(noteTextAreaContainer, noteTextArea);
-        addDocumentListener(noteTextArea);
+        addDocumentListener(noteTextArea, noteSaveButton);
 
 
         // -----------------------------------------------
@@ -440,10 +440,18 @@ public class NotePage extends JFrame {
         scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
     }
 
-    public static void saveNotes(String noteText){
+    public void saveNotes(String noteText){
         if (noteText.equals("Tell us about your day.")){
             return;
         }
+
+        if (noteSaveButton.getIcon().equals(asset.savedIcon)){
+            return;
+        }
+
+        noteSaveButton.setIcon(asset.savedIcon);
+
+        repaint(noteSaveButton);
 
         try {
             dbManager.insertToNotes(Date.valueOf(LocalDateTime.now().toLocalDate()), noteText);
@@ -538,7 +546,7 @@ public class NotePage extends JFrame {
         });
     }
 
-    public void addDocumentListener(JTextArea textArea) {
+    public void addDocumentListener(JTextArea textArea, JButton button) {
         textArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -560,6 +568,10 @@ public class NotePage extends JFrame {
                     textArea.setText(textArea.getText().replaceFirst(
                             "Tell us about your day.", ""));
                     textArea.setForeground(tool.toColor(Main.BROWN));
+                }
+
+                if (button.getIcon().equals(asset.savedIcon)){
+                    button.setIcon(asset.saveIcon);
                 }
 
                 if (textArea.getPreferredSize().getHeight() + 19 <= minNoteContainerSize){
