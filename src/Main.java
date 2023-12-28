@@ -10,7 +10,7 @@ public class Main {
     final static int WHITE = 0xFFFFFF;
     final static int WIDTH = 540;
     final static int HEIGHT = 960;
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new NotePage().setVisible(true);
         });
