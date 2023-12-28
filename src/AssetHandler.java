@@ -23,9 +23,9 @@ public class AssetHandler {
     ImageIcon doneIcon =
             resizeIcon(new ImageIcon("assets/doneIcon.png"), 30, 30);
     ImageIcon saveIcon =
-            resizeIcon(new ImageIcon("assets/saveIcon.png"), 35, 35);
+            resizeIcon(new ImageIcon("assets/saveIcon.png"), 30, 30);
     ImageIcon savedIcon =
-            resizeIcon(new ImageIcon("assets/savedIcon.png"), 35, 35);
+            resizeIcon(new ImageIcon("assets/savedIcon.png"), 30, 30);
 
     private static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
         return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
