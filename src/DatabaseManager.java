@@ -1,8 +1,10 @@
 import java.sql.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedList;
+
 public class DatabaseManager {
     String databaseURL = "jdbc:mysql://localhost:3306/talan";
 
@@ -46,7 +48,7 @@ public class DatabaseManager {
         connection.close();
     }
 
-    public void insertToTasks(String taskText, LocalDateTime dateTime) throws SQLException {
+    public void insertToTasks(String taskText, Date date) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
@@ -54,7 +56,7 @@ public class DatabaseManager {
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
-        preStat.setDate(3, Date.valueOf(dateTime.toLocalDate()));
+        preStat.setDate(3, date);
         preStat.setString(4, "pending");
 
         preStat.executeUpdate();
@@ -76,7 +78,32 @@ public class DatabaseManager {
         preStat.executeUpdate();
 
         connection.close();
+    }
 
+    public LinkedList<LinkedList<Object>> getTasksFromTasks(Date date) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT * FROM TASKS WHERE USER_ID = ? AND DATE = ? ORDER BY ID");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        LinkedList<LinkedList<Object>> resultList = new LinkedList<>();
+
+        int i = 0;
+        while (resultSet.next()){
+            resultList.add(new LinkedList<>());
+            resultList.get(i).add(resultSet.getString("task_text"));
+
+            i++;
+        }
+
+        connection.close();
+
+        return resultList;
     }
 
     public void insertToNotes(Date date, String noteText) throws SQLException {
@@ -123,6 +150,30 @@ public class DatabaseManager {
         preStat.executeUpdate();
 
         connection.close();
+    }
+
+    public String getNoteFromNotes(Date date) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT * FROM NOTES WHERE USER_ID = ? AND DATE = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        if (!resultSet.next()){
+            connection.close();
+
+            return null;
+        }
+
+        String resultString = resultSet.getString("note_text");
+
+        connection.close();
+
+        return resultString;
     }
 
     public int getTaskIdOfLast() throws SQLException {
