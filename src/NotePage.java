@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -226,10 +227,16 @@ public class NotePage extends JFrame {
         noteTextArea.setLineWrap(true);
         noteTextArea.setWrapStyleWord(true);
         noteTextArea.setBorder(null);
+
+        try {
+            getNotes();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         addCaretStart(noteTextArea);
         addFocusRequest(noteTextAreaContainer, noteTextArea);
         addDocumentListener(noteTextArea, noteSaveButton);
-
 
         // -----------------------------------------------
         // ------------------ hierarchy ------------------
@@ -267,7 +274,11 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(factory.createDivider(0, 5));
 
-        addNewTask("add");
+        try {
+            getTasks();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         // notes
         noteTextContainer.add(noteText);
@@ -310,8 +321,17 @@ public class NotePage extends JFrame {
         this.requestFocus();
     }
 
+    public void getTasks() throws SQLException {
+        LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(LocalDateTime.now().toLocalDate()));
 
-    public void addNewTask(String buttonType){
+        for (LinkedList<Object> objects : resultList) {
+            addNewTask("finish", Main.BROWN,objects.get(0).toString());
+        }
+
+        addNewTask("add", Main.LIGHT_BROWN, "New Task");
+    }
+
+    public void addNewTask(String buttonType, Integer colorCode, String taskText){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
@@ -336,11 +356,11 @@ public class NotePage extends JFrame {
         factory.createContainer(taskTextFieldContainer,
                 new GridLayout(1,1, 0,0), (int) (Main.WIDTH - (Main.WIDTH/3.5)), 40);
 
-        taskTextField.setText("New Task");
+        taskTextField.setText(taskText);
         taskTextField.setFont(tool.toMontserrat(20));
         taskTextField.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         taskTextField.setHorizontalAlignment(JTextField.LEFT);
-        taskTextField.setForeground(tool.toColor(Main.LIGHT_BROWN));
+        taskTextField.setForeground(tool.toColor(colorCode));
         taskTextField.setBorder(null);
         addCaretStart(taskTextField);
 
@@ -420,7 +440,7 @@ public class NotePage extends JFrame {
             // save to database
             try {
                 if ((Integer) tasks.get(i).get(5) == 0){
-                    dbManager.insertToTasks(textField.getText(), LocalDateTime.now());
+                    dbManager.insertToTasks(textField.getText(), Date.valueOf(LocalDateTime.now().toLocalDate()));
                     tasks.get(i).set(5, dbManager.getTaskIdOfLast());
                 } else {
                     dbManager.updateToTasks(textField.getText(), (Integer) tasks.get(i).get(5));
@@ -460,11 +480,22 @@ public class NotePage extends JFrame {
         }
     }
 
+    public void getNotes() throws SQLException {
+        String noteText = dbManager.getNoteFromNotes(Date.valueOf(LocalDateTime.now().toLocalDate()));
+
+        if (noteText == null){
+            return;
+        }
+
+        noteTextArea.setText(noteText);
+        noteTextArea.setForeground(tool.toColor(Main.BROWN));
+    }
+
     public void handleAddTask(){
         JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
 
         if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
-            addNewTask("add");
+            addNewTask("add", Main.LIGHT_BROWN, "New Task");
         }
     }
 
