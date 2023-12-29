@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.sql.SQLException;
 
 public class Main {
     final static int YELLOW = 0xFFD34F;
