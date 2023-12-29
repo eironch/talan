@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.sql.Date;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -407,19 +406,20 @@ public class NotePage extends JFrame {
         repaint(taskSectionContainer);
     }
 
-    public void saveTask(ActionEvent e){
+    public void saveTask(ActionEvent e) {
         Object component = e.getSource();
 
-        for(int i = 0; i < tasks.size(); i++){
-            if (!tasks.get(i).contains(component)){
+        for (LinkedList<Object> task : tasks) {
+            if (!task.contains(component)) {
                 continue;
             }
 
             // check if task is valid
-            JTextField textField = (JTextField) tasks.get(i).get(2);
-            if (textField.getText().equals("New Task")){
+            JTextField textField = (JTextField) task.get(2);
+            if (textField.getText().equals("New Task")) {
                 return;
-            } else if (textField.getText().isEmpty()){
+
+            } else if (textField.getText().isEmpty()) {
                 textField.setText("New Task");
                 textField.setForeground(tool.toColor(Main.LIGHT_BROWN));
                 textField.setCaretPosition(0);
@@ -429,9 +429,9 @@ public class NotePage extends JFrame {
                 return;
             }
 
-            Container container = (Container) tasks.get(i).get(1);
-            container.remove((Component) tasks.get(i).get(3));
-            container.add((Component) tasks.get(i).get(4));
+            Container container = (Container) task.get(1);
+            container.remove((Component) task.get(3));
+            container.add((Component) task.get(4));
 
             repaint(container);
 
@@ -439,11 +439,11 @@ public class NotePage extends JFrame {
 
             // save to database
             try {
-                if ((Integer) tasks.get(i).get(5) == 0){
+                if ((Integer) task.get(5) == 0) {
                     dbManager.insertToTasks(textField.getText(), Date.valueOf(LocalDateTime.now().toLocalDate()));
-                    tasks.get(i).set(5, dbManager.getTaskIdOfLast());
+                    task.set(5, dbManager.getTaskIdOfLast());
                 } else {
-                    dbManager.updateToTasks(textField.getText(), (Integer) tasks.get(i).get(5));
+                    dbManager.updateToTasks(textField.getText(), (Integer) task.get(5));
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -654,19 +654,19 @@ public class NotePage extends JFrame {
                     return;
                 }
 
-                for(int i = 0; i < tasks.size(); i++) {
-                    if (!tasks.get(i).contains(textField)) {
+                for (LinkedList<Object> task : tasks) {
+                    if (!task.contains(textField)) {
                         continue;
                     }
 
-                    Container container = (Container) tasks.get(i).get(1);
+                    Container container = (Container) task.get(1);
 
-                    if (container.isAncestorOf((Component) tasks.get(i).get(3))){
+                    if (container.isAncestorOf((Component) task.get(3))) {
                         return;
                     }
 
-                    container.remove((Component) tasks.get(i).get(4));
-                    container.add((Component) tasks.get(i).get(3));
+                    container.remove((Component) task.get(4));
+                    container.add((Component) task.get(3));
 
                     repaint(container);
                 }
