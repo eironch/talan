@@ -12,9 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.awt.event.MouseEvent;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class NotePage extends JFrame {
     final String COLOR_LIGHT_BROWN = tool.toColor(Main.LIGHT_BROWN).toString();
@@ -22,6 +19,11 @@ public class NotePage extends JFrame {
     int taskSectionSize;
     int minTaskSectionSize;
     int minNoteContainerSize;
+    int day;
+    int year;
+    int month;
+    String weekday;
+    LocalDateTime date;
 
     static ComponentToolbox tool = new ComponentToolbox();
     AssetHandler asset = new AssetHandler();
@@ -76,7 +78,7 @@ public class NotePage extends JFrame {
     Container noteTextContainer = new Container();
     Container noteSaveButtonContainer = new Container();
     Container noteTextAreaContainer = new Container();
-
+    JScrollBar verticalScrollBar;
     NotePage() {
         this.setTitle("Talan");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -88,7 +90,7 @@ public class NotePage extends JFrame {
 
         dbManager = new DatabaseManager();
 
-        LocalDateTime date = LocalDateTime.now();
+        date = LocalDateTime.now();
 
         header.setBackground(tool.toColor(Main.YELLOW));
         header.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
@@ -99,6 +101,17 @@ public class NotePage extends JFrame {
         content.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
         content.setPreferredSize(new Dimension(Main.WIDTH, Main.HEIGHT-170));
         tool.addMargin(content, 15,0,0,0);
+
+        pageScrollPane = new JScrollPane(content);
+        pageScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        pageScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        pageScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        pageScrollPane.getVerticalScrollBar().setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        pageScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
+        pageScrollPane.getVerticalScrollBar().setBorder(null);
+        pageScrollPane.getVerticalScrollBar().setFocusable(false);
+        pageScrollPane.setBorder(null);
+        verticalScrollBar = pageScrollPane.getVerticalScrollBar();
 
         // ----------------- top header -------------------
         factory.createContainer(topHeaderContainer, new FlowLayout(), Main.WIDTH, 65);
@@ -121,6 +134,7 @@ public class NotePage extends JFrame {
         monthText.setText(date.format(DateTimeFormatter.ofPattern("MMMM")));
         monthText.setForeground(tool.toColor(Main.BROWN));
         monthText.setFont(tool.toMontserrat(35));
+        month = Integer.parseInt(date.format(DateTimeFormatter.ofPattern("M")));
 
         datePanel.setLayout(new FlowLayout(FlowLayout.CENTER,0,0));
 
@@ -129,6 +143,7 @@ public class NotePage extends JFrame {
         arrowLeftButton.setBackground(tool.toColor(Main.YELLOW));
         arrowLeftButton.setFocusable(false);
         arrowLeftButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        arrowLeftButton.addActionListener(e -> showYesterday());
 
         dayButton.setText(date.format(DateTimeFormatter.ofPattern("dd")));
         dayButton.setForeground(tool.toColor(Main.BROWN));
@@ -139,12 +154,15 @@ public class NotePage extends JFrame {
         dayButton.setBackground(tool.toColor(Main.YELLOW));
         dayButton.setFocusable(false);
         dayButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        dayButton.addActionListener(e -> dayButton());
+        day = Integer.parseInt(date.format(DateTimeFormatter.ofPattern("dd")));
 
         arrowRightButton.setIcon(asset.arrowRightIcon);
         arrowRightButton.setPreferredSize(tool.toDimension(30,50));
         arrowRightButton.setBackground(tool.toColor(Main.YELLOW));
         arrowRightButton.setFocusable(false);
         arrowRightButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        arrowRightButton.addActionListener(e -> showTomorrow());
 
         // ----------------- bottom header --------------------
         factory.createContainer(bottomHeaderContainer,
@@ -162,10 +180,12 @@ public class NotePage extends JFrame {
         weekdayText.setText(date.format(DateTimeFormatter.ofPattern("E")));
         weekdayText.setForeground(tool.toColor(Main.BROWN));
         weekdayText.setFont(tool.toMontserrat(30));
+        weekday = date.format(DateTimeFormatter.ofPattern("E"));
 
         yearText.setText(date.format(DateTimeFormatter.ofPattern("yyyy")));
         yearText.setForeground(tool.toColor(Main.BROWN));
         yearText.setFont(tool.toMontserrat(30));
+        year = Integer.parseInt(date.format(DateTimeFormatter.ofPattern("yyyy")));
 
         // ----------------- task section ------------------
         taskSectionSize = 40;
@@ -191,6 +211,7 @@ public class NotePage extends JFrame {
         taskMenuButton.setPreferredSize(new Dimension(50,50));
         taskMenuButton.setFocusable(false);
         taskMenuButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+
 
         // ----------------- note section -----------------
         minNoteContainerSize = 209;
@@ -226,12 +247,6 @@ public class NotePage extends JFrame {
         noteTextArea.setLineWrap(true);
         noteTextArea.setWrapStyleWord(true);
         noteTextArea.setBorder(null);
-
-        try {
-            getNotes();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
         addCaretStart(noteTextArea);
         addFocusRequest(noteTextAreaContainer, noteTextArea);
@@ -273,11 +288,6 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(factory.createDivider(0, 5));
 
-        try {
-            getTasks();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
         // notes
         noteTextContainer.add(noteText);
@@ -301,18 +311,8 @@ public class NotePage extends JFrame {
         content.add(noteSectionContainer);
         content.add(factory.createDivider());
 
-        pageScrollPane = new JScrollPane(content);
-        pageScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        pageScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        pageScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        pageScrollPane.getVerticalScrollBar().setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        pageScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
-
-        pageScrollPane.getVerticalScrollBar().setBorder(null);
-        pageScrollPane.getVerticalScrollBar().setFocusable(false);
-        pageScrollPane.setBorder(null);
-
         savePeriodically(noteTextArea);
+        updateContent();
 
         this.add(header, BorderLayout.NORTH);
         this.add(pageScrollPane, BorderLayout.CENTER);
@@ -320,17 +320,141 @@ public class NotePage extends JFrame {
         this.requestFocus();
     }
 
-    public void getTasks() throws SQLException {
-        LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(LocalDateTime.now().toLocalDate()));
-
-        for (LinkedList<Object> objects : resultList) {
-            addNewTask("finish", Main.BROWN,objects.get(0).toString());
-        }
-
-        addNewTask("add", Main.LIGHT_BROWN, "New Task");
+    public void dayButton(){
     }
 
-    public void addNewTask(String buttonType, Integer colorCode, String taskText){
+    public void showYesterday() {
+        decreaseDay();
+        updateContent();
+    }
+
+    public void decreaseDay() {
+        if (day != 1) {
+            day--;
+
+            return;
+        }
+
+        if (month == 1) {
+            month = 12;
+            year--;
+        } else {
+            month--;
+        }
+
+        day = checkMonthDays(month, year);
+    }
+
+    public void showTomorrow() {
+        increaseDay();
+        updateContent();
+    }
+
+    public void increaseDay() {
+        if (day != checkMonthDays(month, year)) {
+            day++;
+
+            return;
+        }
+
+        if (month == 12) {
+            month = 1;
+            year++;
+        } else {
+            month++;
+        }
+
+        day = 1;
+    }
+
+    public int checkMonthDays(int month, int year) {
+        return switch (month) {
+            case 1, 3, 5, 7, 8, 10, 12 -> 31;
+            case 4, 6, 9, 11 -> 30;
+            case 2 -> {
+                if ((year % 4) != 0) {
+                    yield 28;
+                } else if ((year % 100) == 0 && (year % 400) != 0) {
+                    yield 28;
+                }
+                yield 29;
+            }
+            default -> 0;
+        };
+    }
+
+   public String getCorrectFormat(int num) {
+        if (num < 10) {
+            return "0" + num;
+        }
+
+        return String.valueOf(num);
+   }
+
+   public void updateContent() {
+       date = LocalDateTime.parse(year + "-" + getCorrectFormat(month) + "-" + getCorrectFormat(day) + "T00:00:00");
+       dayButton.setText(date.format(DateTimeFormatter.ofPattern("dd")));
+       monthText.setText(date.format(DateTimeFormatter.ofPattern("MMMM")));
+       yearText.setText(date.format(DateTimeFormatter.ofPattern("yyyy")));
+       weekdayText.setText(date.format(DateTimeFormatter.ofPattern("E")));
+
+       taskSectionSize = 40;
+       minTaskSectionSize = 275;
+       factory.createContainer(taskSectionContainer,
+               new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, minTaskSectionSize);
+
+       minNoteContainerSize = 209;
+       factory.createContainer(noteSectionContainer,
+               new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, minNoteContainerSize + 50 + 7);
+
+       SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+           @Override
+           protected Void doInBackground() {
+               try {
+                   getNote();
+                   getTasks();
+               } catch (SQLException e) {
+                   throw new RuntimeException(e);
+               }
+
+               return null;
+           }
+
+           @Override
+           protected void done() {
+               SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(0));
+           }
+       };
+
+       worker.execute();
+       this.requestFocus();
+       repaint(pageScrollPane);
+   }
+
+    public void getTasks() throws SQLException {
+        LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(date.toLocalDate()));
+
+        JTextField textField = (JTextField) tasks.get(0).get(2);
+
+        if (resultList.isEmpty() && textField.getForeground().equals(tool.toColor(Main.LIGHT_BROWN))) {
+            System.out.println("yes");
+            return;
+        }
+
+        for (LinkedList<Object> task : tasks) {
+            taskSectionContainer.remove((Component) task.get(0));
+        }
+
+        tasks.clear();
+
+        for (LinkedList<Object> objects : resultList) {
+            addNewTask("finish", Main.BROWN,objects.get(0).toString(), false);
+        }
+
+        addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
+    }
+
+    public void addNewTask(String buttonType, Integer colorCode, String taskText, boolean getFocus){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
@@ -401,15 +525,15 @@ public class NotePage extends JFrame {
 
         addDocumentListener(taskTextField, tasks);
 
-        taskTextField.requestFocus();
-
         repaint(taskSectionContainer);
     }
 
     public void saveTask(ActionEvent e) {
         Object component = e.getSource();
 
-        for (LinkedList<Object> task : tasks) {
+        for (int i = 0; i < tasks.size(); i++) {
+            LinkedList<Object> task = tasks.get(i);
+
             if (!task.contains(component)) {
                 continue;
             }
@@ -440,24 +564,24 @@ public class NotePage extends JFrame {
             // save to database
             try {
                 if ((Integer) task.get(5) == 0) {
-                    dbManager.insertToTasks(textField.getText(), Date.valueOf(LocalDateTime.now().toLocalDate()));
+                    dbManager.insertToTasks(textField.getText(), Date.valueOf(date.toLocalDate()));
                     task.set(5, dbManager.getTaskIdOfLast());
                 } else {
                     dbManager.updateToTasks(textField.getText(), (Integer) task.get(5));
                 }
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                throw new RuntimeException(ex);
             }
         }
     }
 
     public void savePeriodically(JTextArea textArea){
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-        int initialDelay = 5;
-        int period = 5;
-
-        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
+//        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+//
+//        int initialDelay = 5;
+//        int period = 5;
+//
+//        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
     }
 
     public void saveNotes(String noteText){
@@ -474,16 +598,36 @@ public class NotePage extends JFrame {
         repaint(noteSaveButton);
 
         try {
-            dbManager.insertToNotes(Date.valueOf(LocalDateTime.now().toLocalDate()), noteText);
+            dbManager.insertToNotes(Date.valueOf(date.toLocalDate()), noteText);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    public void getNotes() throws SQLException {
-        String noteText = dbManager.getNoteFromNotes(Date.valueOf(LocalDateTime.now().toLocalDate()));
+    public void getNote() throws SQLException {
+        String noteText = dbManager.getNoteFromNotes(Date.valueOf(date.toLocalDate()));
 
         if (noteText == null){
+            if (noteTextArea.getForeground().equals(tool.toColor(Main.BROWN))){
+                noteTextAreaContainer.remove(noteTextArea);
+
+                noteTextArea = new JTextArea();
+                noteTextArea.setText("Tell us about your day.");
+                noteTextArea.setFont(tool.toMontserratMedium(15));
+                noteTextArea.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+                noteTextArea.setForeground(tool.toColor(Main.LIGHT_BROWN));
+                noteTextArea.setColumns(27);
+                noteTextArea.setLineWrap(true);
+                noteTextArea.setWrapStyleWord(true);
+                noteTextArea.setBorder(null);
+
+                addCaretStart(noteTextArea);
+                addFocusRequest(noteTextAreaContainer, noteTextArea);
+                addDocumentListener(noteTextArea, noteSaveButton);
+
+                noteTextAreaContainer.add(noteTextArea);
+            }
+
             return;
         }
 
@@ -495,7 +639,7 @@ public class NotePage extends JFrame {
         JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
 
         if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
-            addNewTask("add", Main.LIGHT_BROWN, "New Task");
+            addNewTask("add", Main.LIGHT_BROWN, "New Task", true);
         }
     }
 
@@ -675,6 +819,7 @@ public class NotePage extends JFrame {
             }
         });
     }
+
 
     static class CustomScrollBarUI extends BasicScrollBarUI {
         int verticalScrollBarWidth = 4;
