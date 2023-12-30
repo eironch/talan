@@ -152,7 +152,6 @@ public class DatabaseManager {
     }
 
     public String getNoteFromNotes(Date date) throws SQLException {
-        System.out.println(date);
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
