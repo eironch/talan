@@ -434,24 +434,35 @@ public class NotePage extends JFrame {
     public void getTasks() throws SQLException {
         LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(date.toLocalDate()));
 
-        JTextField textField = (JTextField) tasks.get(0).get(2);
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                for (LinkedList<Object> task : tasks) {
+                    taskSectionContainer.remove((Component) task.get(0));
+                }
 
-        if (resultList.isEmpty() && textField.getForeground().equals(tool.toColor(Main.LIGHT_BROWN))) {
-            System.out.println("yes");
-            return;
-        }
+                tasks.clear();
 
-        for (LinkedList<Object> task : tasks) {
-            taskSectionContainer.remove((Component) task.get(0));
-        }
+                return null;
+            }
 
-        tasks.clear();
+            @Override
+            protected void done() {
+                if (resultList.isEmpty()) {
+                    addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
 
-        for (LinkedList<Object> objects : resultList) {
-            addNewTask("finish", Main.BROWN,objects.get(0).toString(), false);
-        }
+                    return;
+                }
 
-        addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
+                for (LinkedList<Object> objects : resultList) {
+                    addNewTask("finish", Main.BROWN,objects.get(0).toString(), false);
+                }
+
+                addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
+            }
+        };
+
+        worker.execute();
     }
 
     public void addNewTask(String buttonType, Integer colorCode, String taskText, boolean getFocus){
