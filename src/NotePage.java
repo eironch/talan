@@ -12,6 +12,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.awt.event.MouseEvent;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NotePage extends JFrame {
     final String COLOR_LIGHT_BROWN = tool.toColor(Main.LIGHT_BROWN).toString();
@@ -392,6 +395,7 @@ public class NotePage extends JFrame {
    }
 
    public void updateContent() {
+       saveNotes(noteTextArea.getText());
        date = LocalDateTime.parse(year + "-" + getCorrectFormat(month) + "-" + getCorrectFormat(day) + "T00:00:00");
        dayButton.setText(date.format(DateTimeFormatter.ofPattern("dd")));
        monthText.setText(date.format(DateTimeFormatter.ofPattern("MMMM")));
@@ -587,12 +591,12 @@ public class NotePage extends JFrame {
     }
 
     public void savePeriodically(JTextArea textArea){
-//        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-//
-//        int initialDelay = 5;
-//        int period = 5;
-//
-//        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        int initialDelay = 5;
+        int period = 5;
+
+        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
     }
 
     public void saveNotes(String noteText){
@@ -644,6 +648,9 @@ public class NotePage extends JFrame {
 
         noteTextArea.setText(noteText);
         noteTextArea.setForeground(tool.toColor(Main.BROWN));
+        SwingUtilities.invokeLater(() -> {
+            noteSaveButton.setIcon(asset.savedIcon);
+        });
     }
 
     public void handleAddTask(){
