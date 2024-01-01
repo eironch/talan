@@ -4,7 +4,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -454,25 +453,26 @@ public class NotePage extends JFrame {
 
             @Override
             protected void done() {
+                // return if there is no tasks
                 if (resultList.isEmpty()) {
-                    addNewTask("add", Main.LIGHT_BROWN, "New Task", 0, false);
+                    addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
 
                     return;
                 }
 
-                for (LinkedList<Object> objects : resultList) {
-                    addNewTask("finish", Main.BROWN,objects.get(0).toString(),
-                            Integer.parseInt(objects.get(1).toString()), false);
+                for (LinkedList<Object> taskInfo : resultList) {
+                    addNewTask("finish", Main.BROWN, taskInfo.get(0).toString(),
+                             taskInfo.get(1).toString(), Integer.parseInt(taskInfo.get(2).toString()), false);
                 }
 
-                addNewTask("add", Main.LIGHT_BROWN, "New Task", 0,false);
+                addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
             }
         };
 
         worker.execute();
     }
 
-    public void addNewTask(String buttonType, Integer colorCode, String taskText, int id, boolean getFocus){
+    public void addNewTask(String buttonType, Integer colorCode, String taskText, String status, int id, boolean getFocus){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
@@ -530,6 +530,19 @@ public class NotePage extends JFrame {
 
         taskContainer.add(taskTextFieldContainer);
         taskContainer.add(taskButtonContainer);
+
+        if (status.equals("done")) {
+            accomplishments.add(new LinkedList<>(Arrays.asList(
+                    taskContainer,
+                    taskButtonContainer,
+                    taskTextField,
+                    taskAddButton,
+                    taskFinishButton,
+                    taskId))
+            );
+
+            return;
+        }
 
         taskSectionContainer.add(taskContainer);
 
@@ -600,7 +613,7 @@ public class NotePage extends JFrame {
                     dbManager.insertToTasks(textField.getText(), Date.valueOf(date.toLocalDate()));
                     task.set(5, dbManager.getTaskIdOfLast());
                 } else {
-                    dbManager.updateToTasks(textField.getText(), (Integer) task.get(5));
+                    dbManager.updateTaskTextToTasks(textField.getText(), (Integer) task.get(5));
                 }
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
@@ -675,7 +688,7 @@ public class NotePage extends JFrame {
         JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
 
         if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
-            addNewTask("add", Main.LIGHT_BROWN, "New Task", 0, true);
+            addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, true);
         }
     }
 
@@ -685,6 +698,12 @@ public class NotePage extends JFrame {
         for(int i = 0; i < tasks.size(); i++){
             if (!tasks.get(i).contains(component)){
                 continue;
+            }
+
+            try {
+                dbManager.updateStatusToTasks("done", (Integer) tasks.get(i).get(5));
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
             }
 
             taskSectionContainer.remove((Component) tasks.get(i).get(0));
