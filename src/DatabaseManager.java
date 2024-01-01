@@ -63,16 +63,30 @@ public class DatabaseManager {
         connection.close();
     }
 
-    public void updateToTasks(String taskText, int id) throws SQLException {
+    public void updateTaskTextToTasks(String taskText, int id) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "UPDATE TASKS SET user_id = ?, task_text = ?, status = ? WHERE id = ?");
+                "UPDATE TASKS SET user_id = ?, task_text = ? WHERE id = ?");
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
-        preStat.setString(3, "pending");
-        preStat.setInt(4, id);
+        preStat.setInt(3, id);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public void updateStatusToTasks(String status, int id) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "UPDATE TASKS SET user_id = ?, status = ? WHERE id = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setString(2, status);
+        preStat.setInt(3, id);
 
         preStat.executeUpdate();
 
@@ -96,6 +110,7 @@ public class DatabaseManager {
         while (resultSet.next()){
             resultList.add(new LinkedList<>());
             resultList.get(i).add(resultSet.getString("task_text"));
+            resultList.get(i).add(resultSet.getString("status"));
             resultList.get(i).add(resultSet.getInt("id"));
 
             i++;
