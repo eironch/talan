@@ -11,9 +11,8 @@ public class DatabaseManager {
         try {
             createDatabase();
             createTables();
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -46,6 +45,8 @@ public class DatabaseManager {
 
         connection.close();
     }
+
+    // --------------------- tasks ------------------------
 
     public void insertToTasks(String taskText, Date date) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
@@ -93,11 +94,12 @@ public class DatabaseManager {
         connection.close();
     }
 
+
     public LinkedList<LinkedList<Object>> getTasksFromTasks(Date date) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM TASKS WHERE USER_ID = ? AND DATE = ? ORDER BY ID");
+                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? ORDER BY id");
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -121,11 +123,46 @@ public class DatabaseManager {
         return resultList;
     }
 
+    public void deleteFromTasks(int id) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "DELETE FROM TASKS WHERE user_id = ? AND id = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setInt(2, id);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public int getTaskIdOfLast() throws SQLException {
+        Connection connection =  DriverManager.getConnection(databaseURL, "root", "");
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT id FROM TASKS ORDER BY id DESC LIMIT 2");
+        ResultSet resultSet = preStat.executeQuery();
+
+        if (resultSet.next()){
+            int taskId = resultSet.getInt("id");
+
+            connection.close();
+
+            return taskId;
+        }
+
+        connection.close();
+
+        return 0;
+    }
+
+    // --------------------- notes ------------------------
+
     public void insertToNotes(Date date, String noteText) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT 1 FROM NOTES WHERE USER_ID = ? AND DATE = ?");
+                "SELECT 1 FROM NOTES WHERE user_id = ? AND date = ?");
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -167,11 +204,25 @@ public class DatabaseManager {
         connection.close();
     }
 
+    public void deleteFromNotes(Date date) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "DELETE FROM NOTES WHERE user_id = ? AND date = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
     public String getNoteFromNotes(Date date) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM NOTES WHERE USER_ID = ? AND DATE = ?");
+                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?");
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -181,7 +232,7 @@ public class DatabaseManager {
         if (!resultSet.next()){
             connection.close();
 
-            return null;
+            return "";
         }
 
         String resultString = resultSet.getString("note_text");
@@ -189,25 +240,6 @@ public class DatabaseManager {
         connection.close();
 
         return resultString;
-    }
-
-    public int getTaskIdOfLast() throws SQLException {
-        Connection connection =  DriverManager.getConnection(databaseURL, "root", "");
-        PreparedStatement preStat = connection.prepareStatement(
-                "SELECT ID FROM TASKS ORDER BY ID DESC LIMIT 2");
-        ResultSet resultSet = preStat.executeQuery();
-
-        if (resultSet.next()){
-            int taskId = resultSet.getInt("id");
-
-            connection.close();
-
-            return taskId;
-        }
-
-        connection.close();
-
-        return 0;
     }
 
     private void createDatabase() throws SQLException {
