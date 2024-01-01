@@ -4,6 +4,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -411,7 +413,7 @@ public class NotePage extends JFrame {
        factory.createContainer(noteSectionContainer,
                new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, minNoteContainerSize + 50 + 7);
 
-       SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+       SwingWorker<Void, Void> worker = new SwingWorker<>() {
            @Override
            protected Void doInBackground() {
                try {
@@ -438,7 +440,7 @@ public class NotePage extends JFrame {
     public void getTasks() throws SQLException {
         LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(date.toLocalDate()));
 
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
                 for (LinkedList<Object> task : tasks) {
@@ -453,30 +455,31 @@ public class NotePage extends JFrame {
             @Override
             protected void done() {
                 if (resultList.isEmpty()) {
-                    addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
+                    addNewTask("add", Main.LIGHT_BROWN, "New Task", 0, false);
 
                     return;
                 }
 
                 for (LinkedList<Object> objects : resultList) {
-                    addNewTask("finish", Main.BROWN,objects.get(0).toString(), false);
+                    addNewTask("finish", Main.BROWN,objects.get(0).toString(),
+                            Integer.parseInt(objects.get(1).toString()), false);
                 }
 
-                addNewTask("add", Main.LIGHT_BROWN, "New Task", false);
+                addNewTask("add", Main.LIGHT_BROWN, "New Task", 0,false);
             }
         };
 
         worker.execute();
     }
 
-    public void addNewTask(String buttonType, Integer colorCode, String taskText, boolean getFocus){
+    public void addNewTask(String buttonType, Integer colorCode, String taskText, int id, boolean getFocus){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
         JButton taskAddButton = new JButton();
         JButton taskFinishButton = new JButton();
         JTextField taskTextField = new JTextField();
-        int taskId = 0;
+        int taskId = id;
 
         taskSectionSize += 40;
 
@@ -500,6 +503,7 @@ public class NotePage extends JFrame {
         taskTextField.setHorizontalAlignment(JTextField.LEFT);
         taskTextField.setForeground(tool.toColor(colorCode));
         taskTextField.setBorder(null);
+        addActionListener(taskTextField);
         addCaretStart(taskTextField);
 
         taskAddButton.setIcon(asset.addIcon);
@@ -540,6 +544,11 @@ public class NotePage extends JFrame {
 
         addDocumentListener(taskTextField, tasks);
 
+        if (getFocus) {
+            taskTextField.requestFocus();
+            taskTextField.setCaretPosition(0);
+        }
+
         repaint(taskSectionContainer);
     }
 
@@ -549,8 +558,17 @@ public class NotePage extends JFrame {
         for (int i = 0; i < tasks.size(); i++) {
             LinkedList<Object> task = tasks.get(i);
 
+            // ignore lists that don't have the component
             if (!task.contains(component)) {
                 continue;
+            }
+
+            JButton button = (JButton) task.get(4);
+            Container buttonContainer = (Container) task.get(1);
+
+            // ignore if there is no change
+            if (buttonContainer.isAncestorOf(button)) {
+                return;
             }
 
             // check if task is valid
@@ -657,7 +675,7 @@ public class NotePage extends JFrame {
         JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
 
         if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
-            addNewTask("add", Main.LIGHT_BROWN, "New Task", true);
+            addNewTask("add", Main.LIGHT_BROWN, "New Task", 0, true);
         }
     }
 
@@ -736,6 +754,23 @@ public class NotePage extends JFrame {
                     textArea.setCaretPosition(0);
                 }
             }
+        });
+    }
+
+    public void addActionListener(JTextField textField) {
+        textField.addActionListener(e -> {
+            if (textField.getForeground().equals(tool.toColor(Main.LIGHT_BROWN))) {
+                return;
+            }
+
+            JTextField lastTextField = (JTextField) Objects.requireNonNull(tasks.peekLast()).get(2);
+
+            if (lastTextField.getForeground().equals(tool.toColor(Main.LIGHT_BROWN))) {
+                lastTextField.requestFocus();
+                lastTextField.setCaretPosition(0);
+            }
+            
+            saveTask(e);
         });
     }
 
