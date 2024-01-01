@@ -436,41 +436,7 @@ public class NotePage extends JFrame {
        repaint(pageScrollPane);
    }
 
-    public void getTasks() throws SQLException {
-        LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(date.toLocalDate()));
-
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() {
-                for (LinkedList<Object> task : tasks) {
-                    taskSectionContainer.remove((Component) task.get(0));
-                }
-
-                tasks.clear();
-
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                // return if there is no tasks
-                if (resultList.isEmpty()) {
-                    addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
-
-                    return;
-                }
-
-                for (LinkedList<Object> taskInfo : resultList) {
-                    addNewTask("finish", Main.BROWN, taskInfo.get(0).toString(),
-                             taskInfo.get(1).toString(), Integer.parseInt(taskInfo.get(2).toString()), false);
-                }
-
-                addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
-            }
-        };
-
-        worker.execute();
-    }
+    // --------------------- tasks ------------------------
 
     public void addNewTask(String buttonType, Integer colorCode, String taskText, String status, int id, boolean getFocus){
         Container taskContainer = new Container();
@@ -547,12 +513,12 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskContainer);
 
         tasks.add(new LinkedList<>(Arrays.asList(
-                taskContainer,
-                taskButtonContainer,
-                taskTextField,
-                taskAddButton,
-                taskFinishButton,
-                taskId))
+                taskContainer, // 0
+                taskButtonContainer, // 1
+                taskTextField, // 2
+                taskAddButton, // 3
+                taskFinishButton, // 4
+                taskId)) // 5
         );
 
         addDocumentListener(taskTextField, tasks);
@@ -563,6 +529,42 @@ public class NotePage extends JFrame {
         }
 
         repaint(taskSectionContainer);
+    }
+
+    public void getTasks() throws SQLException {
+        LinkedList<LinkedList<Object>> resultList = dbManager.getTasksFromTasks(Date.valueOf(date.toLocalDate()));
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                for (LinkedList<Object> task : tasks) {
+                    taskSectionContainer.remove((Component) task.get(0));
+                }
+
+                tasks.clear();
+
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // return if there is no tasks
+                if (resultList.isEmpty()) {
+                    addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
+
+                    return;
+                }
+
+                for (LinkedList<Object> taskInfo : resultList) {
+                    addNewTask("finish", Main.BROWN, taskInfo.get(0).toString(),
+                            taskInfo.get(1).toString(), Integer.parseInt(taskInfo.get(2).toString()), false);
+                }
+
+                addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
+            }
+        };
+
+        worker.execute();
     }
 
     public void saveTask(ActionEvent e) {
@@ -576,16 +578,34 @@ public class NotePage extends JFrame {
                 continue;
             }
 
+            JTextField textField = (JTextField) task.get(2);
+
+            // remove component if text field is empty
+            if (textField.getText().isEmpty() && tasks.size() > 1) {
+                try {
+                    dbManager.deleteFromTasks((Integer) task.get(5));
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+                taskSectionContainer.remove((Component) tasks.get(i).get(0));
+
+                removeTask(i);
+
+                repaint(noteSaveButton);
+
+                return;
+            }
+
             JButton button = (JButton) task.get(4);
             Container buttonContainer = (Container) task.get(1);
 
-            // ignore if there is no change
+            // ignore if there is no change when pressing enter
             if (buttonContainer.isAncestorOf(button)) {
                 return;
             }
 
             // check if task is valid
-            JTextField textField = (JTextField) task.get(2);
             if (textField.getText().equals("New Task")) {
                 return;
 
@@ -621,69 +641,6 @@ public class NotePage extends JFrame {
         }
     }
 
-    public void savePeriodically(JTextArea textArea){
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-        int initialDelay = 5;
-        int period = 5;
-
-        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
-    }
-
-    public void saveNotes(String noteText){
-        if (noteText.equals("Tell us about your day.")){
-            return;
-        }
-
-        if (noteSaveButton.getIcon().equals(asset.savedIcon)){
-            return;
-        }
-
-        noteSaveButton.setIcon(asset.savedIcon);
-
-        repaint(noteSaveButton);
-
-        try {
-            dbManager.insertToNotes(Date.valueOf(date.toLocalDate()), noteText);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void getNote() throws SQLException {
-        String noteText = dbManager.getNoteFromNotes(Date.valueOf(date.toLocalDate()));
-
-        if (noteText == null){
-            if (noteTextArea.getForeground().equals(tool.toColor(Main.BROWN))){
-                noteTextAreaContainer.remove(noteTextArea);
-
-                noteTextArea = new JTextArea();
-                noteTextArea.setText("Tell us about your day.");
-                noteTextArea.setFont(tool.toMontserratMedium(15));
-                noteTextArea.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-                noteTextArea.setForeground(tool.toColor(Main.LIGHT_BROWN));
-                noteTextArea.setColumns(27);
-                noteTextArea.setLineWrap(true);
-                noteTextArea.setWrapStyleWord(true);
-                noteTextArea.setBorder(null);
-
-                addCaretStart(noteTextArea);
-                addFocusRequest(noteTextAreaContainer, noteTextArea);
-                addDocumentListener(noteTextArea, noteSaveButton);
-
-                noteTextAreaContainer.add(noteTextArea);
-            }
-
-            return;
-        }
-
-        noteTextArea.setText(noteText);
-        noteTextArea.setForeground(tool.toColor(Main.BROWN));
-        SwingUtilities.invokeLater(() -> {
-            noteSaveButton.setIcon(asset.savedIcon);
-        });
-    }
-
     public void handleAddTask(){
         JTextField textField = (JTextField) tasks.get(tasks.size() - 1).get(2);
 
@@ -709,19 +666,93 @@ public class NotePage extends JFrame {
             taskSectionContainer.remove((Component) tasks.get(i).get(0));
 
             accomplishments.add(tasks.get(i));
-            tasks.remove(i);
 
-            taskSectionSize -= 40;
-
-            if (tasks.size()>=5){
-                taskSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
-                content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 20));
-            }
+            removeTask(i);
 
             repaint(content);
 
             return;
         }
+    }
+
+    public void removeTask (int index){
+        tasks.remove(index);
+
+        taskSectionSize -= 40;
+
+        if (tasks.size()>=5){
+            taskSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
+            content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 20));
+        }
+    }
+
+    // --------------------- notes ------------------------
+
+    public void getNote() throws SQLException {
+        String noteText = dbManager.getNoteFromNotes(Date.valueOf(date.toLocalDate()));
+
+        if (noteText.isEmpty()){
+            if (noteTextArea.getForeground().equals(tool.toColor(Main.BROWN))){
+                noteTextAreaContainer.remove(noteTextArea);
+
+                noteTextArea = new JTextArea();
+                noteTextArea.setText("Tell us about your day.");
+                noteTextArea.setFont(tool.toMontserratMedium(15));
+                noteTextArea.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+                noteTextArea.setForeground(tool.toColor(Main.LIGHT_BROWN));
+                noteTextArea.setColumns(27);
+                noteTextArea.setLineWrap(true);
+                noteTextArea.setWrapStyleWord(true);
+                noteTextArea.setBorder(null);
+
+                addCaretStart(noteTextArea);
+                addFocusRequest(noteTextAreaContainer, noteTextArea);
+                addDocumentListener(noteTextArea, noteSaveButton);
+
+                noteTextAreaContainer.add(noteTextArea);
+            }
+
+            return;
+        }
+
+        noteTextArea.setText(noteText);
+        noteTextArea.setForeground(tool.toColor(Main.BROWN));
+        SwingUtilities.invokeLater(() -> noteSaveButton.setIcon(asset.savedIcon));
+    }
+
+    public void saveNotes(String noteText){
+        if (noteText.equals("Tell us about your day.")){
+            return;
+        }
+
+        if (noteSaveButton.getIcon().equals(asset.savedIcon)){
+            return;
+        }
+
+        noteSaveButton.setIcon(asset.savedIcon);
+
+        repaint(noteSaveButton);
+
+        try {
+            if (noteText.isEmpty()) {
+                dbManager.deleteFromNotes(Date.valueOf(date.toLocalDate()));
+
+                return;
+            }
+
+            dbManager.insertToNotes(Date.valueOf(date.toLocalDate()), noteText);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void savePeriodically(JTextArea textArea){
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        int initialDelay = 5;
+        int period = 5;
+
+        scheduler.scheduleAtFixedRate(() -> saveNotes(textArea.getText()), initialDelay, period, TimeUnit.SECONDS);
     }
 
     public void addFocusRequest(Container container, JTextArea textArea) {
