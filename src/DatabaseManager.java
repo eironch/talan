@@ -96,6 +96,7 @@ public class DatabaseManager {
         while (resultSet.next()){
             resultList.add(new LinkedList<>());
             resultList.get(i).add(resultSet.getString("task_text"));
+            resultList.get(i).add(resultSet.getInt("id"));
 
             i++;
         }
