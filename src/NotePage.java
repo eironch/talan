@@ -104,7 +104,7 @@ public class NotePage extends JFrame {
         content.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         content.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
         content.setPreferredSize(new Dimension(Main.WIDTH, Main.HEIGHT-170));
-        tool.addMargin(content, 15,0,0,0);
+        tool.addMargin(content, 15,16,0,0);
 
         pageScrollPane = new JScrollPane(content);
         pageScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -412,6 +412,8 @@ public class NotePage extends JFrame {
        factory.createContainer(noteSectionContainer,
                new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, minNoteContainerSize + 50 + 7);
 
+       content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 35));
+
        SwingWorker<Void, Void> worker = new SwingWorker<>() {
            @Override
            protected Void doInBackground() {
@@ -451,7 +453,7 @@ public class NotePage extends JFrame {
 
         if ((taskSectionSize) > minTaskSectionSize - 35){
             taskSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
-            content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 20));
+            content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 35));
         }
 
         repaint(content);
