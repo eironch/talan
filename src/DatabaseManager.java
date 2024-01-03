@@ -43,6 +43,13 @@ public class DatabaseManager {
                 "note_text TEXT NOT NULL" +
                 ")");
 
+        // create notes table
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS MOODS ("+
+                "date DATE PRIMARY KEY," +
+                "user_id INT NOT NULL," +
+                "mood VARCHAR(9) NOT NULL" +
+                ")");
+
         connection.close();
     }
 
@@ -162,7 +169,7 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT 1 FROM NOTES WHERE user_id = ? AND date = ?");
+                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?");
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -236,6 +243,78 @@ public class DatabaseManager {
         }
 
         String resultString = resultSet.getString("note_text");
+
+        connection.close();
+
+        return resultString;
+    }
+
+    // --------------------- moods ------------------------
+
+    public void insertToMoods(Date date, String mood) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        if (resultSet.next()){
+            updateToMoods(date, mood);
+
+            connection.close();
+
+            return;
+        }
+
+        preStat = connection.prepareStatement(
+                "INSERT INTO MOODS (date, user_id, mood) VALUES (?, ?, ?)");
+
+        preStat.setDate(1, date);
+        preStat.setInt(2, 1);
+        preStat.setString(3, mood);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public void updateToMoods(Date date, String mood) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "UPDATE MOODS SET mood = ? WHERE USER_ID = ? AND date = ?");
+
+        preStat.setString(1, mood);
+        preStat.setInt(2, 1);
+        preStat.setDate(3, date);
+
+        preStat.executeUpdate();
+
+        connection.close();
+    }
+
+    public String getMoodFromMoods(Date date) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        if (!resultSet.next()){
+            connection.close();
+
+            return "";
+        }
+
+        String resultString = resultSet.getString("mood");
 
         connection.close();
 
