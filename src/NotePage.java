@@ -30,12 +30,15 @@ public class NotePage extends JFrame {
     LocalDateTime date;
 
     static ComponentToolbox tool = new ComponentToolbox();
+    static DatabaseManager dbManager = new DatabaseManager();
     AssetHandler asset = new AssetHandler();
     ComponentFactory factory = new ComponentFactory();
-    static DatabaseManager dbManager;
+    JScrollBar verticalScrollBar;
 
     LinkedList<LinkedList<Object>> tasks = new LinkedList<>();
     LinkedList<LinkedList<Object>> accomplishments = new LinkedList<>();
+
+    ButtonGroup moodButtonsGroup = new ButtonGroup();
 
     // button
     JButton arrowLeftButton = new JButton();
@@ -45,6 +48,13 @@ public class NotePage extends JFrame {
     JButton taskMenuButton = new JButton();
     JButton noteSaveButton = new JButton();
 
+    // checkbox
+    JRadioButton worstMoodButton = new JRadioButton();
+    JRadioButton badMoodButton = new JRadioButton();
+    JRadioButton fineMoodButton = new JRadioButton();
+    JRadioButton goodMoodButton = new JRadioButton();
+    JRadioButton excellentMoodButton = new JRadioButton();
+
     // label
     JLabel monthText = new JLabel();
 //    JLabel progressBar = new JLabel();
@@ -52,6 +62,7 @@ public class NotePage extends JFrame {
     JLabel yearText = new JLabel();
     JLabel taskText = new JLabel();
     JLabel noteText = new JLabel();
+    JLabel moodContext = new JLabel();
 
     // text area
     JTextArea noteTextArea = new JTextArea();
@@ -82,7 +93,10 @@ public class NotePage extends JFrame {
     Container noteTextContainer = new Container();
     Container noteSaveButtonContainer = new Container();
     Container noteTextAreaContainer = new Container();
-    JScrollBar verticalScrollBar;
+    Container moodSectionContainer = new Container();
+    Container moodContextContainer = new Container();
+    Container moodButtonsContainer = new Container();
+
     NotePage() {
         this.setTitle("Talan");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -91,8 +105,6 @@ public class NotePage extends JFrame {
         this.setLayout(new BorderLayout());
         this.getContentPane().setBackground(tool.toColor(Main.LIGHT_YELLOW));
         this.setIconImage(asset.icon.getImage());
-
-        dbManager = new DatabaseManager();
 
         date = LocalDateTime.now();
 
@@ -256,8 +268,45 @@ public class NotePage extends JFrame {
         addFocusRequest(noteTextAreaContainer, noteTextArea);
         addDocumentListener(noteTextArea, noteSaveButton);
 
+        // --------------- mood section -----------------
+        factory.createContainer(moodSectionContainer,
+                new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, 140);
+        factory.createContainer(moodContextContainer,
+                new FlowLayout(FlowLayout.CENTER, 0, 20), Main.WIDTH, 70);
+        factory.createContainer(moodButtonsContainer,
+                new FlowLayout(FlowLayout.CENTER, 20, 0), Main.WIDTH, 70);
+
+        moodContext.setText("How do you feel today?");
+        moodContext.setForeground(tool.toColor(Main.BROWN));
+        moodContext.setFont(tool.toMontserrat(20));
+
+        worstMoodButton.setFocusable(false);
+        worstMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        worstMoodButton.setIcon(asset.worstMoodIcon);
+        worstMoodButton.setSelectedIcon(asset.worstSelectedMoodIcon);
+
+        badMoodButton.setFocusable(false);
+        badMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        badMoodButton.setIcon(asset.badMoodIcon);
+        badMoodButton.setSelectedIcon(asset.badSelectedMoodIcon);
+
+        fineMoodButton.setFocusable(false);
+        fineMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        fineMoodButton.setIcon(asset.fineMoodIcon);
+        fineMoodButton.setSelectedIcon(asset.fineSelectedMoodIcon);
+
+        goodMoodButton.setFocusable(false);
+        goodMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        goodMoodButton.setIcon(asset.goodMoodIcon);
+        goodMoodButton.setSelectedIcon(asset.goodSelectedMoodIcon);
+
+        excellentMoodButton.setFocusable(false);
+        excellentMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        excellentMoodButton.setIcon(asset.excellentMoodIcon);
+        excellentMoodButton.setSelectedIcon(asset.excellentSelectedMoodIcon);
+
         // -----------------------------------------------
-        // ------------------ hierarchy ------------------
+        // ----------------- hierarchy -------------------
         // -----------------------------------------------
 
         // top header
@@ -292,8 +341,7 @@ public class NotePage extends JFrame {
         taskSectionContainer.add(taskHeaderContainer);
         taskSectionContainer.add(factory.createDivider(0, 5));
 
-
-        // notes
+        // note
         noteTextContainer.add(noteText);
         noteSaveButtonContainer.add(noteSaveButton);
 
@@ -305,6 +353,24 @@ public class NotePage extends JFrame {
         noteSectionContainer.add(noteHeaderContainer);
         noteSectionContainer.add(noteTextAreaContainer);
 
+        // mood
+        moodContextContainer.add(moodContext);
+
+        moodButtonsGroup.add(worstMoodButton);
+        moodButtonsGroup.add(badMoodButton);
+        moodButtonsGroup.add(fineMoodButton);
+        moodButtonsGroup.add(goodMoodButton);
+        moodButtonsGroup.add(excellentMoodButton);
+
+        moodButtonsContainer.add(worstMoodButton);
+        moodButtonsContainer.add(badMoodButton);
+        moodButtonsContainer.add(fineMoodButton);
+        moodButtonsContainer.add(goodMoodButton);
+        moodButtonsContainer.add(excellentMoodButton);
+
+        moodSectionContainer.add(moodContextContainer);
+        moodSectionContainer.add(moodButtonsContainer);
+
         // header
         header.add(topHeaderContainer);
         header.add(bottomHeaderContainer);
@@ -314,6 +380,7 @@ public class NotePage extends JFrame {
         content.add(factory.createDivider());
         content.add(noteSectionContainer);
         content.add(factory.createDivider());
+        content.add(moodSectionContainer);
 
         savePeriodically(noteTextArea);
         updateContent();
@@ -440,14 +507,13 @@ public class NotePage extends JFrame {
 
     // --------------------- tasks ------------------------
 
-    public void addNewTask(String buttonType, Integer colorCode, String taskText, String status, int id, boolean getFocus){
+    public void addNewTask(String buttonType, Integer colorCode, String taskText, String status, int taskId, boolean getFocus){
         Container taskContainer = new Container();
         Container taskButtonContainer = new Container();
         Container taskTextFieldContainer = new Container();
         JButton taskAddButton = new JButton();
         JButton taskFinishButton = new JButton();
         JTextField taskTextField = new JTextField();
-        int taskId = id;
 
         taskSectionSize += 40;
 
