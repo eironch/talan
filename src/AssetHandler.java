@@ -26,6 +26,27 @@ public class AssetHandler {
             resizeIcon(new ImageIcon("assets/saveIcon.png"), 30, 30);
     ImageIcon savedIcon =
             resizeIcon(new ImageIcon("assets/savedIcon.png"), 30, 30);
+    ImageIcon worstMoodIcon =
+            resizeIcon(new ImageIcon("assets/worstMoodIcon.png"), 50, 50);
+    ImageIcon badMoodIcon =
+            resizeIcon(new ImageIcon("assets/badMoodIcon.png"), 50, 50);
+    ImageIcon fineMoodIcon =
+            resizeIcon(new ImageIcon("assets/fineMoodIcon.png"), 50, 50);
+    ImageIcon goodMoodIcon =
+            resizeIcon(new ImageIcon("assets/goodMoodIcon.png"), 50, 50);
+    ImageIcon excellentMoodIcon =
+            resizeIcon(new ImageIcon("assets/excellentMoodIcon.png"), 50, 50);
+    ImageIcon worstSelectedMoodIcon =
+            resizeIcon(new ImageIcon("assets/worstSelectedMoodIcon.png"), 50, 50);
+    ImageIcon badSelectedMoodIcon =
+            resizeIcon(new ImageIcon("assets/badSelectedMoodIcon.png"), 50, 50);
+    ImageIcon fineSelectedMoodIcon =
+            resizeIcon(new ImageIcon("assets/fineSelectedMoodIcon.png"), 50, 50);
+    ImageIcon goodSelectedMoodIcon =
+            resizeIcon(new ImageIcon("assets/goodSelectedMoodIcon.png"), 50, 50);
+    ImageIcon excellentSelectedMoodIcon =
+            resizeIcon(new ImageIcon("assets/excellentSelectedMoodIcon.png"), 50, 50);
+
 
     private static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
         return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
