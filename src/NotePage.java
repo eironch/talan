@@ -270,11 +270,11 @@ public class NotePage extends JFrame {
 
         // --------------- mood section -----------------
         factory.createContainer(moodSectionContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, 140);
+                new FlowLayout(FlowLayout.CENTER, 0, 0), Main.WIDTH, 130);
         factory.createContainer(moodContextContainer,
-                new FlowLayout(FlowLayout.CENTER, 0, 20), Main.WIDTH, 70);
+                new FlowLayout(FlowLayout.CENTER, 0, 20), Main.WIDTH, 65);
         factory.createContainer(moodButtonsContainer,
-                new FlowLayout(FlowLayout.CENTER, 20, 0), Main.WIDTH, 70);
+                new FlowLayout(FlowLayout.CENTER, 20, 0), Main.WIDTH, 65);
 
         moodContext.setText("How do you feel today?");
         moodContext.setForeground(tool.toColor(Main.BROWN));
@@ -284,27 +284,27 @@ public class NotePage extends JFrame {
         worstMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         worstMoodButton.setIcon(asset.worstMoodIcon);
         worstMoodButton.setSelectedIcon(asset.worstSelectedMoodIcon);
-
+        worstMoodButton.addActionListener(this::selectMood);
         badMoodButton.setFocusable(false);
         badMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         badMoodButton.setIcon(asset.badMoodIcon);
         badMoodButton.setSelectedIcon(asset.badSelectedMoodIcon);
-
+        badMoodButton.addActionListener(this::selectMood);
         fineMoodButton.setFocusable(false);
         fineMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         fineMoodButton.setIcon(asset.fineMoodIcon);
         fineMoodButton.setSelectedIcon(asset.fineSelectedMoodIcon);
-
+        fineMoodButton.addActionListener(this::selectMood);
         goodMoodButton.setFocusable(false);
         goodMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         goodMoodButton.setIcon(asset.goodMoodIcon);
         goodMoodButton.setSelectedIcon(asset.goodSelectedMoodIcon);
-
+        goodMoodButton.addActionListener(this::selectMood);
         excellentMoodButton.setFocusable(false);
         excellentMoodButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
         excellentMoodButton.setIcon(asset.excellentMoodIcon);
         excellentMoodButton.setSelectedIcon(asset.excellentSelectedMoodIcon);
-
+        excellentMoodButton.addActionListener(this::selectMood);
         // -----------------------------------------------
         // ----------------- hierarchy -------------------
         // -----------------------------------------------
@@ -487,6 +487,7 @@ public class NotePage extends JFrame {
                try {
                    getNote();
                    getTasks();
+                   getMood();
                } catch (SQLException e) {
                    throw new RuntimeException(e);
                }
@@ -515,14 +516,16 @@ public class NotePage extends JFrame {
         JButton taskFinishButton = new JButton();
         JTextField taskTextField = new JTextField();
 
-        taskSectionSize += 40;
+        if (status.equals("pending")) {
+            taskSectionSize += 40;
 
-        if ((taskSectionSize) > minTaskSectionSize - 35){
-            taskSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
-            content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 35));
+            if ((taskSectionSize) > minTaskSectionSize - 35) {
+                taskSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
+                content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 35));
+            }
+
+            repaint(content);
         }
-
-        repaint(content);
 
         factory.createContainer(taskContainer,
                 new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 40);
@@ -595,8 +598,6 @@ public class NotePage extends JFrame {
             taskTextField.requestFocus();
             taskTextField.setCaretPosition(0);
         }
-
-        repaint(taskSectionContainer);
     }
 
     public void getTasks() throws SQLException {
@@ -605,6 +606,10 @@ public class NotePage extends JFrame {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
+                if (resultList.isEmpty() && tasks.size() == 1) {
+                    return null;
+                }
+
                 for (LinkedList<Object> task : tasks) {
                     taskSectionContainer.remove((Component) task.get(0));
                 }
@@ -617,18 +622,19 @@ public class NotePage extends JFrame {
             @Override
             protected void done() {
                 // return if there is no tasks
-                if (resultList.isEmpty()) {
-                    addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
-
+                if (resultList.isEmpty() && tasks.size() == 1) {
                     return;
                 }
 
                 for (LinkedList<Object> taskInfo : resultList) {
                     addNewTask("finish", Main.BROWN, taskInfo.get(0).toString(),
                             taskInfo.get(1).toString(), Integer.parseInt(taskInfo.get(2).toString()), false);
+                    repaint(taskSectionContainer);
+
                 }
 
                 addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, false);
+                repaint(taskSectionContainer);
             }
         };
 
@@ -648,10 +654,16 @@ public class NotePage extends JFrame {
 
             JTextField textField = (JTextField) task.get(2);
 
+            if (textField.getText().isEmpty() &&
+                    i == tasks.size() - 1) {
+
+                return;
+            }
+
             // remove component if text field is empty
             if (textField.getText().isEmpty() && tasks.size() > 1) {
                 try {
-                    dbManager.deleteFromTasks((Integer) task.get(5));
+                    dbManager.deleteFromTasks((Integer) task.getLast());
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -660,7 +672,7 @@ public class NotePage extends JFrame {
 
                 removeTask(i);
 
-                repaint(noteSaveButton);
+                repaint(taskSectionContainer);
 
                 return;
             }
@@ -714,6 +726,7 @@ public class NotePage extends JFrame {
 
         if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
             addNewTask("add", Main.LIGHT_BROWN, "New Task", "pending", 0, true);
+            repaint(taskSectionContainer);
         }
     }
 
@@ -811,6 +824,39 @@ public class NotePage extends JFrame {
             dbManager.insertToNotes(Date.valueOf(date.toLocalDate()), noteText);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // --------------------- moods ------------------------
+
+    public void selectMood(ActionEvent e) {
+        try {
+            if (e.getSource() == worstMoodButton) {
+                dbManager.insertToMoods(Date.valueOf(date.toLocalDate()), "worst");
+            } else if (e.getSource() == badMoodButton) {
+                dbManager.insertToMoods(Date.valueOf(date.toLocalDate()), "bad");
+            } else if (e.getSource() == fineMoodButton) {
+                dbManager.insertToMoods(Date.valueOf(date.toLocalDate()), "fine");
+            } else if (e.getSource() == goodMoodButton) {
+                dbManager.insertToMoods(Date.valueOf(date.toLocalDate()), "good");
+            } else if (e.getSource() == excellentMoodButton) {
+                dbManager.insertToMoods(Date.valueOf(date.toLocalDate()), "excellent");
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void getMood() throws SQLException {
+        String result = dbManager.getMoodFromMoods(Date.valueOf(date.toLocalDate()));
+
+        switch (result) {
+            case "worst" -> worstMoodButton.setSelected(true);
+            case "bad" -> badMoodButton.setSelected(true);
+            case "fine" -> fineMoodButton.setSelected(true);
+            case "good" -> goodMoodButton.setSelected(true);
+            case "excellent" -> excellentMoodButton.setSelected(true);
+            case "" -> moodButtonsGroup.clearSelection();
         }
     }
 
