@@ -3,15 +3,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
+import java.awt.event.*;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.awt.event.MouseEvent;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -686,7 +684,7 @@ public class NotePage extends JFrame {
             // remove component if text field is empty
             if (textField.getText().isEmpty() && taskList.size() > 1) {
                 try {
-                    dbManager.deleteFromTasks((Integer) task.getLast());
+                    dbManager.deleteFromTasks((Integer) task.getLast(), Date.valueOf(date.toLocalDate()));
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -734,7 +732,7 @@ public class NotePage extends JFrame {
             try {
                 if ((Integer) task.getLast() == 0) {
                     dbManager.insertToTasks(textField.getText(), Date.valueOf(date.toLocalDate()));
-                    task.set(5, dbManager.getTaskIdOfLast());
+                    task.set(6, dbManager.getTaskIdOfLast());
                 } else {
                     dbManager.updateTaskTextToTasks(textField.getText(), (Integer) task.getLast());
                 }
@@ -1046,7 +1044,7 @@ public class NotePage extends JFrame {
                 lastTextField.requestFocus();
                 lastTextField.setCaretPosition(0);
             }
-            
+
             saveTask(e);
         });
     }
@@ -1119,9 +1117,9 @@ public class NotePage extends JFrame {
 
             private void handleNewLine() {
                 if (textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                    textField.setForeground(tool.toColor(Main.BROWN));
                     textField.setText(textField.getText().replaceFirst(
                             "New Task", ""));
-                    textField.setForeground(tool.toColor(Main.BROWN));
 
                     repaint(textField);
 
@@ -1149,7 +1147,6 @@ public class NotePage extends JFrame {
             }
         });
     }
-
 
     static class CustomScrollBarUI extends BasicScrollBarUI {
         int verticalScrollBarWidth = 4;
