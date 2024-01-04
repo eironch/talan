@@ -106,10 +106,11 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? ORDER BY id");
+                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id");
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
+        preStat.setString(3, "pending");
 
         ResultSet resultSet = preStat.executeQuery();
 
@@ -119,7 +120,6 @@ public class DatabaseManager {
         while (resultSet.next()){
             resultList.add(new LinkedList<>());
             resultList.get(i).add(resultSet.getString("task_text"));
-            resultList.get(i).add(resultSet.getString("status"));
             resultList.get(i).add(resultSet.getInt("id"));
 
             i++;
@@ -319,6 +319,36 @@ public class DatabaseManager {
         connection.close();
 
         return resultString;
+    }
+
+    // --------------------- done ------------------------
+
+    public LinkedList<LinkedList<Object>> getDoneFromTasks(Date date) throws SQLException {
+        Connection connection = DriverManager.getConnection(databaseURL, "root", "");
+
+        PreparedStatement preStat = connection.prepareStatement(
+                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id");
+
+        preStat.setInt(1, 1);
+        preStat.setDate(2, date);
+        preStat.setString(3, "done");
+
+        ResultSet resultSet = preStat.executeQuery();
+
+        LinkedList<LinkedList<Object>> resultList = new LinkedList<>();
+
+        int i = 0;
+        while (resultSet.next()){
+            resultList.add(new LinkedList<>());
+            resultList.get(i).add(resultSet.getString("task_text"));
+            resultList.get(i).add(resultSet.getInt("id"));
+
+            i++;
+        }
+
+        connection.close();
+
+        return resultList;
     }
 
     private void createDatabase() throws SQLException {
