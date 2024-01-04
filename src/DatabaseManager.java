@@ -130,14 +130,15 @@ public class DatabaseManager {
         return resultList;
     }
 
-    public void deleteFromTasks(int id) throws SQLException {
+    public void deleteFromTasks(int id, Date date) throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "DELETE FROM TASKS WHERE user_id = ? AND id = ?");
+                "DELETE FROM TASKS WHERE user_id = ? AND id = ? AND date = ?");
 
         preStat.setInt(1, 1);
         preStat.setInt(2, id);
+        preStat.setDate(3, date);
 
         preStat.executeUpdate();
 
