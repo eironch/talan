@@ -46,7 +46,8 @@ public class AssetHandler {
             resizeIcon(new ImageIcon("assets/goodSelectedMoodIcon.png"), 50, 50);
     ImageIcon excellentSelectedMoodIcon =
             resizeIcon(new ImageIcon("assets/excellentSelectedMoodIcon.png"), 50, 50);
-
+    ImageIcon swapTabIcon =
+            resizeIcon(new ImageIcon("assets/swapTabIcon.png"), 45, 45);
 
     private static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
         return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
