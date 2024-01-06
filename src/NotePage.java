@@ -43,7 +43,7 @@ public class NotePage extends JFrame {
     JButton arrowRightButton = new JButton();
     JButton sidebarButton = new JButton();
     JButton dayButton = new JButton();
-    JButton taskMenuButton = new JButton();
+    JButton taskTabButton = new JButton();
     JButton noteSaveButton = new JButton();
 
     // checkbox
@@ -85,7 +85,7 @@ public class NotePage extends JFrame {
     Container taskDoneSectionContainer = new Container();
     Container taskHeaderContainer = new Container();
     Container taskTextContainer = new Container();
-    Container taskMenuContainer = new Container();
+    Container taskTabContainer = new Container();
     Container noteSectionContainer = new Container();
     Container noteHeaderContainer = new Container();
     Container noteTextContainer = new Container();
@@ -214,19 +214,19 @@ public class NotePage extends JFrame {
         // content
         factory.createContainer(taskTextContainer,
                 new FlowLayout(FlowLayout.LEADING, 54,3), Main.WIDTH, Main.HEIGHT);
-        factory.createContainer(taskMenuContainer,
+        factory.createContainer(taskTabContainer,
                 new FlowLayout(FlowLayout.TRAILING, 55,0), Main.WIDTH, Main.HEIGHT);
 
         taskDoneText.setText("Tasks");
         taskDoneText.setForeground(tool.toColor(Main.BROWN));
         taskDoneText.setFont(tool.toMontserrat(35));
 
-        taskMenuButton.setIcon(asset.circleIcon);
-        taskMenuButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
-        taskMenuButton.setPreferredSize(new Dimension(50,50));
-        taskMenuButton.setFocusable(false);
-        taskMenuButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
-        taskMenuButton.addActionListener(e -> swapTaskAccomplished());
+        taskTabButton.setIcon(asset.swapTabIcon);
+        taskTabButton.setBackground(tool.toColor(Main.LIGHT_YELLOW));
+        taskTabButton.setPreferredSize(new Dimension(50,50));
+        taskTabButton.setFocusable(false);
+        taskTabButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        taskTabButton.addActionListener(e -> swapTaskAccomplished());
 
         // ----------------- note section -----------------
 
@@ -333,10 +333,10 @@ public class NotePage extends JFrame {
 
         // task header
         taskTextContainer.add(taskDoneText);
-        taskMenuContainer.add(taskMenuButton);
+        taskTabContainer.add(taskTabButton);
 
         taskHeaderContainer.add(taskTextContainer);
-        taskHeaderContainer.add(taskMenuContainer);
+        taskHeaderContainer.add(taskTabContainer);
 
         // task
         taskDoneSectionContainer.add(taskHeaderContainer);
@@ -567,7 +567,7 @@ public class NotePage extends JFrame {
         taskDoneButton.setPreferredSize(new Dimension(40,40));
         taskDoneButton.setFocusable(false);
         taskDoneButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
-//        taskDoneButton.addActionListener(this::revertTask);
+        taskDoneButton.addActionListener(this::revertTask);
 
         if (status.equals("done")) {
             taskButtonContainer.add(taskDoneButton);
@@ -689,9 +689,9 @@ public class NotePage extends JFrame {
                     throw new RuntimeException(ex);
                 }
 
-                taskDoneSectionContainer.remove((Component) taskList.get(i).get(0));
+                taskDoneSectionContainer.remove((Component) task.get(0));
 
-                removeTask(i);
+                adjustTaskSectionSize(i, taskList);
 
                 repaint(taskDoneSectionContainer);
 
@@ -755,20 +755,22 @@ public class NotePage extends JFrame {
     public void finishTask(ActionEvent e) {
         Object component = e.getSource();
 
-        for(int i = 0; i < taskList.size(); i++){
-            if (!taskList.get(i).contains(component)){
+        for (int i = 0; i < taskList.size(); i++) {
+            LinkedList<Object> task = taskList.get(i);
+
+            if (!task.contains(component)) {
                 continue;
             }
 
+            taskDoneSectionContainer.remove((Component) task.getFirst());
+
             try {
-                dbManager.updateStatusToTasks("done", (Integer) taskList.get(i).getLast());
+                dbManager.updateStatusToTasks("done", (Integer) task.getLast());
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
 
-            taskDoneSectionContainer.remove((Component) taskList.get(i).get(0));
-
-            removeTask(i);
+            adjustTaskSectionSize(i, taskList);
 
             repaint(content);
 
@@ -776,12 +778,37 @@ public class NotePage extends JFrame {
         }
     }
 
-    public void removeTask (int index){
-        taskList.remove(index);
+    public void revertTask (ActionEvent e) {
+        Object component = e.getSource();
 
+        for (int i = 0; i < doneList.size(); i++) {
+            LinkedList<Object> done = doneList.get(i);
+
+            if (!done.contains(component)) {
+                continue;
+            }
+
+            taskDoneSectionContainer.remove((Component) done.getFirst());
+
+            try {
+                dbManager.updateStatusToTasks("pending", (Integer) done.getLast());
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            adjustTaskSectionSize(i, doneList);
+
+            repaint(content);
+
+            return;
+        }
+    }
+
+    public void adjustTaskSectionSize (int index, LinkedList<LinkedList<Object>> list){
+        list.remove(index);
         taskSectionSize -= 40;
 
-        if (taskList.size()>=5){
+        if (list.size()>=5){
             taskDoneSectionContainer.setPreferredSize(new Dimension(Main.WIDTH, taskSectionSize + 35));
             content.setPreferredSize(new Dimension(Main.WIDTH, tool.getTotalHeight(content) + 20));
         }
