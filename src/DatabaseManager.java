@@ -16,6 +16,18 @@ public class DatabaseManager {
         }
     }
 
+    private void createDatabase() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/";
+
+        Connection connection = DriverManager.getConnection(url, "root", "");
+
+        Statement statement= connection.createStatement();
+
+        statement.executeUpdate("CREATE DATABASE IF NOT EXISTS TALAN");
+
+        connection.close();
+    }
+
     public void createTables() throws SQLException {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
         Statement statement = connection.createStatement();
@@ -350,18 +362,6 @@ public class DatabaseManager {
         connection.close();
 
         return resultList;
-    }
-
-    private void createDatabase() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/";
-
-        Connection connection = DriverManager.getConnection(url, "root", "");
-
-        Statement statement= connection.createStatement();
-
-        statement.executeUpdate("CREATE DATABASE IF NOT EXISTS TALAN");
-
-        connection.close();
     }
 
     private String hashPassword(String password) {
