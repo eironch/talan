@@ -838,6 +838,8 @@ public class NotePage extends JFrame {
                 addDocumentListener(noteTextArea, noteSaveButton);
 
                 noteTextAreaContainer.add(noteTextArea);
+
+                repaint(noteTextAreaContainer);
             }
 
             return;
