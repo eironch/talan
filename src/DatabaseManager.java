@@ -37,7 +37,8 @@ public class DatabaseManager {
                 "id INT AUTO_INCREMENT PRIMARY KEY," +
                 "username VARCHAR(16) NOT NULL," +
                 "password TEXT NOT NULL" +
-                ")");
+                ")"
+        );
 
         // create tasks table
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS TASKS ("+
@@ -46,21 +47,24 @@ public class DatabaseManager {
                 "task_text TEXT NOT NULL," +
                 "date DATE NOT NULL," +
                 "status VARCHAR(7) NOT NULL" +
-                ")");
+                ")"
+        );
 
         // create notes table
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS NOTES ("+
                 "date DATE PRIMARY KEY," +
                 "user_id INT NOT NULL," +
                 "note_text TEXT NOT NULL" +
-                ")");
+                ")"
+        );
 
         // create notes table
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS MOODS ("+
                 "date DATE PRIMARY KEY," +
                 "user_id INT NOT NULL," +
                 "mood VARCHAR(9) NOT NULL" +
-                ")");
+                ")"
+        );
 
         connection.close();
     }
@@ -71,7 +75,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "INSERT INTO TASKS (user_id, task_text, date, status) VALUES (?, ?, ?, ?)");
+                "INSERT INTO TASKS (user_id, task_text, date, status) VALUES (?, ?, ?, ?)"
+        );
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
@@ -87,7 +92,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "UPDATE TASKS SET user_id = ?, task_text = ? WHERE id = ?");
+                "UPDATE TASKS SET user_id = ?, task_text = ? WHERE id = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setString(2, taskText);
@@ -102,7 +108,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "UPDATE TASKS SET user_id = ?, status = ? WHERE id = ?");
+                "UPDATE TASKS SET user_id = ?, status = ? WHERE id = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setString(2, status);
@@ -118,7 +125,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id");
+                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -146,7 +154,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "DELETE FROM TASKS WHERE user_id = ? AND id = ? AND date = ?");
+                "DELETE FROM TASKS WHERE user_id = ? AND id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setInt(2, id);
@@ -160,7 +169,8 @@ public class DatabaseManager {
     public int getTaskIdOfLast() throws SQLException {
         Connection connection =  DriverManager.getConnection(databaseURL, "root", "");
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT id FROM TASKS ORDER BY id DESC LIMIT 2");
+                "SELECT id FROM TASKS ORDER BY id DESC LIMIT 2"
+        );
         ResultSet resultSet = preStat.executeQuery();
 
         if (resultSet.next()){
@@ -182,7 +192,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?");
+                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -198,7 +209,8 @@ public class DatabaseManager {
         }
 
         preStat = connection.prepareStatement(
-                "INSERT INTO NOTES (date, user_id, note_text) VALUES (?, ?, ?)");
+                "INSERT INTO NOTES (date, user_id, note_text) VALUES (?, ?, ?)"
+        );
 
         preStat.setDate(1, date);
         preStat.setInt(2, 1);
@@ -213,7 +225,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "UPDATE NOTES SET note_text = ? WHERE USER_ID = ? AND date = ?");
+                "UPDATE NOTES SET note_text = ? WHERE USER_ID = ? AND date = ?"
+        );
 
         preStat.setString(1, noteText);
         preStat.setInt(2, 1);
@@ -228,7 +241,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "DELETE FROM NOTES WHERE user_id = ? AND date = ?");
+                "DELETE FROM NOTES WHERE user_id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -242,7 +256,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?");
+                "SELECT * FROM NOTES WHERE user_id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -268,7 +283,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?");
+                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -284,7 +300,8 @@ public class DatabaseManager {
         }
 
         preStat = connection.prepareStatement(
-                "INSERT INTO MOODS (date, user_id, mood) VALUES (?, ?, ?)");
+                "INSERT INTO MOODS (date, user_id, mood) VALUES (?, ?, ?)"
+        );
 
         preStat.setDate(1, date);
         preStat.setInt(2, 1);
@@ -299,7 +316,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "UPDATE MOODS SET mood = ? WHERE USER_ID = ? AND date = ?");
+                "UPDATE MOODS SET mood = ? WHERE USER_ID = ? AND date = ?"
+        );
 
         preStat.setString(1, mood);
         preStat.setInt(2, 1);
@@ -314,7 +332,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?");
+                "SELECT * FROM MOODS WHERE user_id = ? AND date = ?"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
@@ -340,7 +359,8 @@ public class DatabaseManager {
         Connection connection = DriverManager.getConnection(databaseURL, "root", "");
 
         PreparedStatement preStat = connection.prepareStatement(
-                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id");
+                "SELECT * FROM TASKS WHERE user_id = ? AND date = ? AND status = ? ORDER BY id"
+        );
 
         preStat.setInt(1, 1);
         preStat.setDate(2, date);
