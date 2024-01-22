@@ -1,111 +1,141 @@
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ComponentFactory {
-    AssetHandler asset = new AssetHandler();
-    ComponentToolbox tool = new ComponentToolbox();
-    public void createContainer(JPanel panel, FlowLayout layout, int width, int height){
-        panel.setLayout(layout);
-        panel.setPreferredSize(new Dimension(width, height));
-    }
+    AssetFactory asset = new AssetFactory();
+    AssetFactory a = new AssetFactory();
 
-    public void createContainer(Container container, FlowLayout layout, int width, int height){
-        container.setLayout(layout);
-        container.setPreferredSize(new Dimension(width, height));
-    }
+    // button
+    JButton arrowLeftButton = new JButton();
+    JButton arrowRightButton = new JButton();
+    JButton sidebarButton = new JButton();
+    JButton dayButton = new JButton();
+    JButton taskTabButton = new JButton();
+    JButton noteSaveButton = new JButton();
 
-    public void createContainer(JPanel panel, FlowLayout layout){
-        panel.setLayout(layout);
-    }
+    // checkbox
+    JRadioButton worstMoodButton = new JRadioButton();
+    JRadioButton badMoodButton = new JRadioButton();
+    JRadioButton fineMoodButton = new JRadioButton();
+    JRadioButton goodMoodButton = new JRadioButton();
+    JRadioButton excellentMoodButton = new JRadioButton();
 
-    public void createContainer(Container container, FlowLayout layout){
-        container.setLayout(layout);
-    }
+    // label
+    JLabel monthText = new JLabel();
+    //    JLabel progressBar = new JLabel();
+    JLabel weekdayText = new JLabel();
+    JLabel yearText = new JLabel();
+    JLabel taskDoneText = new JLabel();
+    JLabel noteText = new JLabel();
+    JLabel moodContext = new JLabel();
 
-    public void createContainer(JPanel panel, GridLayout layout, int width, int height){
-        panel.setLayout(layout);
-        panel.setPreferredSize(new Dimension(width, height));
-    }
+    // text area
+    JTextArea noteTextArea = new JTextArea();
+    LocalDateTime date;
 
-    public void createContainer(Container container, GridLayout layout, int width, int height){
-        container.setLayout(layout);
-        container.setPreferredSize(new Dimension(width, height));
-    }
-    public void createContainer(JPanel panel, BorderLayout layout, int width, int height){
-        panel.setLayout(layout);
-        panel.setPreferredSize(new Dimension(width, height));
-    }
+    public ComponentFactory() {
+        date = LocalDateTime.now();
 
-    public void createContainer(Container container, BorderLayout layout, int width, int height){
-        container.setLayout(layout);
-        container.setPreferredSize(new Dimension(width, height));
-    }
+        // ----------------- top header -------------------
+        sidebarButton.setIcon(asset.sidebarIcon);
+        sidebarButton.setPreferredSize(new Dimension(50, 50));
+        sidebarButton.setBackground(a.toColor(Main.YELLOW));
+        sidebarButton.setFocusable(false);
+        sidebarButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-    public Container createDivider(int marginN, int marginS){
-        Container dividerSectionContainer = new Container();
-        Container dividerContainer = new Container();
-        Container dividerAssetContainer = new Container();
-        JPanel divider = new JPanel();
-        JLabel dividerLeft = new JLabel();
-        JLabel dividerRight = new JLabel();
+        monthText.setText(date.format(DateTimeFormatter.ofPattern("MMMM")));
+        monthText.setForeground(a.toColor(Main.BROWN));
+        monthText.setFont(a.toMontserrat(35));
+        arrowLeftButton.setIcon(asset.arrowLeftIcon);
+        arrowLeftButton.setPreferredSize(new Dimension(30,50));
+        arrowLeftButton.setBackground(a.toColor(Main.YELLOW));
+        arrowLeftButton.setFocusable(false);
+        arrowLeftButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        createContainer(dividerSectionContainer,
-                new GridLayout(), Main.WIDTH, 15 + marginS);
-        createContainer(dividerContainer,
-                new FlowLayout(FlowLayout.CENTER), Main.WIDTH,15);
-        createContainer(dividerAssetContainer,
-                new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 4);
+        dayButton.setText(date.format(DateTimeFormatter.ofPattern("dd")));
+        dayButton.setForeground(a.toColor(Main.BROWN));
+        dayButton.setFont(a.toMontserrat(25));
+        dayButton.setHorizontalTextPosition(JLabel.CENTER);
+        dayButton.setVerticalTextPosition(JLabel.CENTER);
+        dayButton.setIcon(asset.roundSquareIcon);
+        dayButton.setBackground(a.toColor(Main.YELLOW));
+        dayButton.setFocusable(false);
+        dayButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        dividerLeft.setIcon(asset.dividerLeftIcon);
-        dividerLeft.setPreferredSize(new Dimension(asset.dividerLeftIcon.getIconWidth(),8));
-        dividerLeft.setVerticalAlignment(SwingConstants.TOP);
+        arrowRightButton.setIcon(asset.arrowRightIcon);
+        arrowRightButton.setPreferredSize(new Dimension(30,50));
+        arrowRightButton.setBackground(a.toColor(Main.YELLOW));
+        arrowRightButton.setFocusable(false);
+        arrowRightButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-        dividerRight.setIcon(asset.dividerRightIcon);
-        dividerRight.setPreferredSize(new Dimension(asset.dividerRightIcon.getIconWidth(),8));
-        dividerRight.setVerticalAlignment(SwingConstants.TOP);
+        // ----------------- bottom header --------------------
 
-        divider.setBackground(tool.toColor(Main.BROWN));
-        divider.setPreferredSize(new Dimension(Main.WIDTH - (Main.WIDTH/4),8));
+        weekdayText.setText(date.format(DateTimeFormatter.ofPattern("E")));
+        weekdayText.setForeground(a.toColor(Main.BROWN));
+        weekdayText.setFont(a.toMontserrat(30));
+        yearText.setText(date.format(DateTimeFormatter.ofPattern("yyyy")));
+        yearText.setForeground(a.toColor(Main.BROWN));
+        yearText.setFont(a.toMontserrat(30));
 
-        dividerAssetContainer.add(dividerLeft);
-        dividerAssetContainer.add(divider);
-        dividerAssetContainer.add(dividerRight);
+        // ------------------ task section ---------------------
 
-        dividerContainer.add(dividerAssetContainer);
-        dividerSectionContainer.add(dividerContainer);
+        taskDoneText.setText("Tasks");
+        taskDoneText.setForeground(a.toColor(Main.BROWN));
+        taskDoneText.setFont(a.toMontserrat(35));
 
-        return dividerSectionContainer;
-    }
+        taskTabButton.setIcon(asset.swapTabIcon);
+        taskTabButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        taskTabButton.setPreferredSize(new Dimension(50,50));
+        taskTabButton.setFocusable(false);
+        taskTabButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
 
-    public Container createDivider(){
-        Container dividerSectionContainer = new Container();
-        Container dividerContainer = new Container();
-        JPanel divider = new JPanel();
-        JLabel dividerLeft = new JLabel();
-        JLabel dividerRight = new JLabel();
+        // ----------------- note section -----------------
 
-        createContainer(dividerSectionContainer,
-                new FlowLayout(), Main.WIDTH,15);
-        createContainer(dividerContainer,
-                new FlowLayout(FlowLayout.CENTER, 0,0), Main.WIDTH, 4);
+        noteText.setText("Notes");
+        noteText.setForeground(a.toColor(Main.BROWN));
+        noteText.setFont(a.toMontserrat(35));
 
-        dividerLeft.setIcon(asset.dividerLeftIcon);
-        dividerLeft.setPreferredSize(new Dimension(asset.dividerLeftIcon.getIconWidth(),8));
-        dividerLeft.setVerticalAlignment(SwingConstants.TOP);
+        noteSaveButton.setIcon(asset.savedIcon);
+        noteSaveButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        noteSaveButton.setPreferredSize(new Dimension(50,50));
+        noteSaveButton.setFocusable(false);
+        noteSaveButton.setBorder(BorderFactory.createMatteBorder(0,0,0,0, Color.BLACK));
+        noteTextArea.setText("Tell us about your day.");
+        noteTextArea.setFont(a.toMontserratMedium(15));
+        noteTextArea.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        noteTextArea.setForeground(a.toColor(Main.LIGHT_BROWN));
+        noteTextArea.setColumns(27);
+        noteTextArea.setLineWrap(true);
+        noteTextArea.setWrapStyleWord(true);
+        noteTextArea.setBorder(null);
 
-        dividerRight.setIcon(asset.dividerRightIcon);
-        dividerRight.setPreferredSize(new Dimension(asset.dividerRightIcon.getIconWidth(),8));
-        dividerRight.setVerticalAlignment(SwingConstants.TOP);
+        // --------------- mood section -----------------
 
-        divider.setBackground(tool.toColor(Main.BROWN));
-        divider.setPreferredSize(new Dimension(Main.WIDTH - (Main.WIDTH/4),8));
+        moodContext.setText("How do you feel today?");
+        moodContext.setForeground(a.toColor(Main.BROWN));
+        moodContext.setFont(a.toMontserrat(20));
 
-        dividerContainer.add(dividerLeft);
-        dividerContainer.add(divider);
-        dividerContainer.add(dividerRight);
-
-        dividerSectionContainer.add(dividerContainer);
-
-        return dividerSectionContainer;
+        worstMoodButton.setFocusable(false);
+        worstMoodButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        worstMoodButton.setIcon(asset.worstMoodIcon);
+        worstMoodButton.setSelectedIcon(asset.worstSelectedMoodIcon);
+        badMoodButton.setFocusable(false);
+        badMoodButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        badMoodButton.setIcon(asset.badMoodIcon);
+        badMoodButton.setSelectedIcon(asset.badSelectedMoodIcon);
+        fineMoodButton.setFocusable(false);
+        fineMoodButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        fineMoodButton.setIcon(asset.fineMoodIcon);
+        fineMoodButton.setSelectedIcon(asset.fineSelectedMoodIcon);
+        goodMoodButton.setFocusable(false);
+        goodMoodButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        goodMoodButton.setIcon(asset.goodMoodIcon);
+        goodMoodButton.setSelectedIcon(asset.goodSelectedMoodIcon);
+        excellentMoodButton.setFocusable(false);
+        excellentMoodButton.setBackground(a.toColor(Main.LIGHT_YELLOW));
+        excellentMoodButton.setIcon(asset.excellentMoodIcon);
+        excellentMoodButton.setSelectedIcon(asset.excellentSelectedMoodIcon);
     }
 }
