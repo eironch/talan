@@ -11,7 +11,7 @@ public class Main {
     final static int HEIGHT = 960;
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new NotePage().setVisible(true);
+            new MainView().setVisible(true);
         });
     }
 }
