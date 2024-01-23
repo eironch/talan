@@ -15,12 +15,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MainView extends JFrame {
+public class MainView {
+    JFrame f;
     AssetFactory a = new AssetFactory();
     DatabaseManager d = new DatabaseManager();
     ComponentFactory c = new ComponentFactory();
     PanelFactory p = new PanelFactory();
-    final String COLOR_LIGHT_BROWN = a.toColor(Main.LIGHT_BROWN).toString();
+
     int taskSectionSize = 40;
     int minTaskSectionSize = 275;
     int minNoteContainerSize = 209;
@@ -32,14 +33,8 @@ public class MainView extends JFrame {
     LinkedList<LinkedList<Object>> taskList = new LinkedList<>();
     LinkedList<LinkedList<Object>> doneList = new LinkedList<>();
 
-    public MainView() {
-        this.setTitle("Talan");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(Main.WIDTH, Main.HEIGHT);
-        this.setResizable(false);
-        this.setLayout(new BorderLayout());
-        this.getContentPane().setBackground(a.toColor(Main.LIGHT_YELLOW));
-        this.setIconImage(a.icon.getImage());
+    public MainView(JFrame frame) {
+        this.f = frame;
 
         date = LocalDateTime.now();
         day = Integer.parseInt(date.format(DateTimeFormatter.ofPattern("dd")));
@@ -150,10 +145,10 @@ public class MainView extends JFrame {
         savePeriodically(c.noteTextArea);
         updateContent();
 
-        this.add(p.header, BorderLayout.NORTH);
-        this.add(p.pageScrollPane, BorderLayout.CENTER);
-        this.setFocusable(true);
-        this.requestFocus();
+        f.add(p.header, BorderLayout.NORTH);
+        f.add(p.pageScrollPane, BorderLayout.CENTER);
+        f.setFocusable(true);
+        f.requestFocus();
     }
 
     public void showYesterday() {
@@ -270,7 +265,7 @@ public class MainView extends JFrame {
 
        worker.execute();
 
-       this.requestFocus();
+       f.requestFocus();
        repaint(p.pageScrollPane);
    }
 
@@ -509,7 +504,7 @@ public class MainView extends JFrame {
     public void handleAddTask(){
         JTextField textField = (JTextField) taskList.get(taskList.size() - 1).get(2);
 
-        if (!textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+        if (!textField.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
             addNewTask("add", Main.LIGHT_BROWN, "New Task",
                     "pending", 0, true, true);
             repaint(p.taskDoneSectionContainer);
@@ -753,8 +748,6 @@ public class MainView extends JFrame {
                             "done", Integer.parseInt(doneInfo.getLast().toString()),
                             false, false);
                 }
-
-//                addNewTask("add", Main.LIGHT_BROWN, "New Task", "done", 0, false);
             }
         };
 
@@ -775,7 +768,7 @@ public class MainView extends JFrame {
     public void addFocusRequest(Container container, JTextArea textArea) {
         container.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                if (textArea.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
                     textArea.setCaretPosition(0);
                 }
             }
@@ -799,7 +792,7 @@ public class MainView extends JFrame {
             }
 
             private void resetCaretPosition(){
-                if (textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                if (textField.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
                     textField.setCaretPosition(0);
                 }
             }
@@ -817,7 +810,7 @@ public class MainView extends JFrame {
             }
 
             private void resetCaretPosition(){
-                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                if (textArea.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
                     textArea.setCaretPosition(0);
                 }
             }
@@ -859,7 +852,7 @@ public class MainView extends JFrame {
             }
 
             private void handleNewLine() {
-                if (textArea.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                if (textArea.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
                     textArea.setText(textArea.getText().replaceFirst(
                             "Tell us about your day.", ""));
                     textArea.setForeground(a.toColor(Main.BROWN));
@@ -910,7 +903,7 @@ public class MainView extends JFrame {
             }
 
             private void handleNewLine() {
-                if (textField.getForeground().toString().equals(COLOR_LIGHT_BROWN)){
+                if (textField.getForeground().toString().equals(Main.COLOR_LIGHT_BROWN)){
                     textField.setForeground(a.toColor(Main.BROWN));
                     textField.setText(textField.getText().replaceFirst(
                             "New Task", ""));
