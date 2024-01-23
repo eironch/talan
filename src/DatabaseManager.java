@@ -36,7 +36,8 @@ public class DatabaseManager {
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS ("+
                 "id INT AUTO_INCREMENT PRIMARY KEY," +
                 "username VARCHAR(16) NOT NULL," +
-                "password TEXT NOT NULL" +
+                "password TEXT NOT NULL," +
+                "is_logged_in BOOLEAN NOT NULL" +
                 ")"
         );
 
