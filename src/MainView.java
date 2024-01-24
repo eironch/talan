@@ -49,7 +49,7 @@ public class MainView {
 
         c.taskTabButton.addActionListener(e -> swapTaskAccomplished());
 
-        // ----------------- note section -----------------
+        // ----------------- note section ------------------
 
         c.noteSaveButton.addActionListener(e -> saveNotes(c.noteTextArea.getText()));
 
@@ -57,7 +57,7 @@ public class MainView {
         addFocusRequest(p.noteTextAreaContainer, c.noteTextArea);
         addDocumentListener(c.noteTextArea, c.noteSaveButton);
 
-        // --------------- mood section -----------------
+        // ------------------ mood section ------------------
 
         c.worstMoodButton.addActionListener(this::selectMood);
         c.badMoodButton.addActionListener(this::selectMood);
