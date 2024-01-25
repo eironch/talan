@@ -393,8 +393,6 @@ public class DatabaseManager {
             return Base64.getEncoder().encodeToString(hash);
 
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-
             return null;
         }
     }
