@@ -24,7 +24,6 @@ public class ComponentFactory {
 
     // label
     JLabel monthText = new JLabel();
-    //    JLabel progressBar = new JLabel();
     JLabel weekdayText = new JLabel();
     JLabel yearText = new JLabel();
     JLabel taskDoneText = new JLabel();
